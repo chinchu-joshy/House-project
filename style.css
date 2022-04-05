@@ -1,0 +1,30 @@
+*{
+    margin: 0;
+    
+}
+.navbar{
+    display: flex;
+    justify-content: center;
+    width: 100vw;
+    align-items: center;
+    
+    height: 10vh;
+}
+.navbar ul{
+    display: flex;
+    justify-content: space-evenly;
+    width: 100vw;
+    align-items: center;
+    list-style-type: none;
+    background-color: black;
+    height: 100%;
+    
+}
+.navbar ul li{
+    color: red;
+    cursor: pointer;
+   
+}
+.navbar ul li:hover{
+    color: white;
+}
