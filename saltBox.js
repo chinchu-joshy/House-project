@@ -12,49 +12,55 @@ let camera,
   texture,
   textureRoof,
   ventTexture,
-  found,obj;
+  found,
+  obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
 const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
 var draggable = new THREE.Object3D();
 /* -------------------- events to trigger the raycasting -------------------- */
-window.addEventListener("click",(event)=>{
- console.log(draggable)
- 
-  if(draggable.parent){
-    console.log("jh")
-    
-draggable= new THREE.Object3D();
-
-return;
+window.addEventListener("click", (event) => {
+  console.log(draggable);
+  if (draggable.parent) {
+    console.log("clicked again");
+    draggable = new THREE.Object3D();
+    return;
   }
- 
-  clickmouse.x=(event.clientX/window.innerWidth)*2-1
+  console.log("clicked");
+  clickmouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   clickmouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(clickmouse, camera);
   found = raycaster.intersectObjects(scene.children);
-  console.log(found)
+  console.log(found[0].object.userData.draggable);
   if (found.length > 0 && found[0].object.userData.draggable) {
     draggable = found[0].object;
+    console.log("reached");
   }
 });
 window.addEventListener("mousemove", (event) => {
   movemouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   movemouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  dargObject();
 });
 
 function dargObject() {
   if (draggable != null) {
     raycaster.setFromCamera(movemouse, camera);
     obj = raycaster.intersectObjects(scene.children);
+    console.log(obj);
+
     if (obj.length > 0) {
       for (let o of obj) {
-        if (!o.object.userData.ground) {
+        if (!o.object.userData.limit) {
+          console.log("continue",o.object)
           continue;
         } else {
+         
+          console.log("entered dragged" ,o.object);
           draggable.position.x = o.point.x;
-          draggable.position.z = o.point.z;
+          draggable.position.y = o.point.y;
+          draggable.visible = true;
         }
       }
     }
@@ -133,18 +139,15 @@ function init() {
   ventTexture = new THREE.TextureLoader().load("Model/Venttexture.jpg");
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/vent.fbx", (object) => {
+    console.log("first object", object);
+    scene.add(object);
     object.traverse((child) => {
+      console.log("vent child", child);
+      child.visible = true;
       if (child.isMesh && child.name.includes("Vent")) {
-        addVent(child,0xf0f0f0);
+        addVent(child, 0xf0f0f0);
       }
     });
-    scene.add(object);
-    object.scale.set(0.2,0.2,0.2)
-    object.position.set(13, 50, 28.99);
-    object.rotation.y=Math.PI
-    object.userData.name="Vent"
-    object.userData.draggable=true
-  
   });
   fbxLoader.load("Model/model-3.fbx", function (object) {
     window.model = object;
@@ -153,13 +156,9 @@ function init() {
         addBottom(child, 0xf0f0f0);
         window.child = child;
         window.changeBottomColor = addBottom;
-
       }
       if (child.isMesh && child.name.includes("Trim")) {
         Trim(child, 0x5d665f);
-        // console.log(child.material);
-        // child.material.needsUpdate = true;
-        // child.material.bumpMap.needsUpdate = true;
       }
       if (child.name.includes("Ridge_Cap")) {
         child.visible = false;
@@ -194,7 +193,6 @@ function init() {
         child.traverse((value) => {
           if (value.isMesh && value.name?.includes("Archite")) {
             Roof(value);
-          
           }
         });
       }
@@ -205,9 +203,7 @@ function init() {
 
     scene.add(object);
     object.position.set(0, 0, 0);
-    object.userData.name="Roofing"
-    
-    //  object.rotation.z=2
+    object.userData.name = "Roofing";
 
     object.scale.set(0.19, 0.19, 0.19);
   });
@@ -228,9 +224,9 @@ function addBottom(child, color) {
   child.material.map.wrapS = THREE.RepeatWrapping;
   child.material.map.wrapT = THREE.RepeatWrapping;
   child.material.color = new THREE.Color(color);
-  child.userData.draggable=false
-  child.userData.name="sidewall"
-  
+
+  child.userData.draggable = false;
+  child.userData.name = "sidewall";
 }
 function sideWall(value, color) {
   value.material = new THREE.MeshStandardMaterial();
@@ -243,45 +239,53 @@ function sideWall(value, color) {
   value.material.bumpMap.wrapS = THREE.RepeatWrapping;
   value.material.bumpMap.wrapT = THREE.RepeatWrapping;
   value.material.needsUpdate = true;
- 
+  value.userData.draggable = false;
+  value.userData.name = "wall";
+  value.userData.limit = true;
 }
 function Trim(child, color) {
   child.material = new THREE.MeshPhongMaterial();
   child.castShadow = true;
   child.receiveShadow = true;
-  // child.flatshading = true;
   child.material.bumpMap = texture;
   child.material.bumpScale = 0.08;
   child.material.bumpMap.wrapS = THREE.RepeatWrapping;
   child.material.bumpMap.wrapT = THREE.RepeatWrapping;
   child.material.color = new THREE.Color(color);
+  child.userData.draggable = false;
+  child.userData.name = "trim";
+  child.userData.limit = true;
 }
 function Roof(value) {
   value.material = new THREE.MeshPhongMaterial();
   value.material.map = textureRoof;
   value.material.map.wrapS = THREE.RepeatWrapping;
   value.material.map.wrapT = THREE.RepeatWrapping;
-  //value.material.bumpScale = 0.002;
-  // value.material.color = new THREE.Color(0x292721);
   value.material.map.repeat.set(6, 6);
+  value.userData.draggable = false;
+  value.userData.name = "roof";
+  value.userData.limit = true;
 }
 function addVent(child) {
   child.material = new THREE.MeshPhongMaterial();
   child.castShadow = true;
   child.receiveShadow = true;
-console.log(ventTexture)
   child.material.map = ventTexture;
-  
   child.material.map.wrapS = THREE.RepeatWrapping;
   child.material.map.wrapT = THREE.RepeatWrapping;
   child.material.needsUpdate = true;
   child.material.map.needsUpdate = true;
-  child.material.color=new THREE.Color(0xffffff)
+  child.scale.set(0.2, 0.2, 0.2);
+  child.position.set(13, 49.8, 14);
+  child.rotation.y = Math.PI;
+  child.material.color = new THREE.Color(0xffffff);
+  child.userData.draggable = true;
+  child.userData.name = "vent";
+  child.userData.limit = false;
 }
 
 /* --------------------------------- animate -------------------------------- */
 function animate() {
-  dargObject()
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 

@@ -2,7 +2,7 @@ import { FBXLoader } from "/js/fbxloader.js";
 let camera, scene, renderer;
 init();
 animate();
-// Canvas
+
 function model1(data) {
   const fbxLoader = new FBXLoader();
   fbxLoader.load(data, function (object) {
