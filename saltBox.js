@@ -13,6 +13,7 @@ let camera,
   textureRoof,
   ventTexture,
   found,
+  mousemove,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
@@ -20,51 +21,85 @@ const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
 var draggable = new THREE.Object3D();
 /* -------------------- events to trigger the raycasting -------------------- */
-window.addEventListener("click", (event) => {
-  console.log(draggable);
-  if (draggable.parent) {
-    console.log("clicked again");
-    draggable = new THREE.Object3D();
-    return;
-  }
-  console.log("clicked");
-  clickmouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  clickmouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(clickmouse, camera);
-  found = raycaster.intersectObjects(scene.children);
-  console.log(found[0].object.userData.draggable);
-  if (found.length > 0 && found[0].object.userData.draggable) {
-    draggable = found[0].object;
-    console.log("reached");
-  }
-});
-window.addEventListener("mousemove", (event) => {
-  movemouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  movemouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  dargObject();
-});
+// window.addEventListener("click", (event) => {
+//   console.log(draggable);
+//   if (draggable.parent) {
+//     console.log("clicked again");
+//     draggable = new THREE.Object3D();
+//     return;
+//   }
+//   console.log("clicked");
+//   clickmouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+//   clickmouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+//   raycaster.setFromCamera(clickmouse, camera);
+//   found = raycaster.intersectObjects(scene.children);
+//   console.log(found[0].object.userData.draggable);
+//   if (found.length > 0 && found[0].object.userData.draggable) {
+//     draggable = found[0].object;
+//     console.log("reached");
+//   }
+// });
+// window.addEventListener("mousemove", (event) => {
+//   movemouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+//   movemouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+//   dargObject();
+// });
 
-function dargObject() {
-  if (draggable != null) {
-    raycaster.setFromCamera(movemouse, camera);
-    obj = raycaster.intersectObjects(scene.children);
-    console.log(obj);
+// function dargObject() {
+//   if (draggable != null) {
+//     raycaster.setFromCamera(movemouse, camera);
+//     obj = raycaster.intersectObjects(scene.children);
+//     console.log(obj);
 
-    if (obj.length > 0) {
-      for (let o of obj) {
-        if (!o.object.userData.limit) {
-          console.log("continue",o.object)
-          continue;
-        } else {
-         
-          console.log("entered dragged" ,o.object);
-          draggable.position.x = o.point.x;
-          draggable.position.y = o.point.y;
-          draggable.visible = true;
-        }
+//     if (obj.length > 0) {
+//       for (let o of obj) {
+//         if (!o.object.userData.limit) {
+//           console.log("continue", o.object);
+//           continue;
+//         } else {
+//           console.log("entered dragged", o.object);
+//           draggable.position.x = o.point.x;
+//           draggable.position.y = o.point.y;
+//           draggable.visible = true;
+//         }
+//       }
+//     }
+//   }
+// }
+document.addEventListener("mousedown", onMouseDown);
+function onMouseDown(event) {
+  
+  const mouse3D = new THREE.Vector3(
+    (event.clientX / window.innerWidth) * 2 - 1,
+    -(event.clientY / window.innerHeight) * 2 + 1
+  );
+
+  raycaster.setFromCamera(mouse3D, camera);
+  
+  console.log("parent",scene.children[7].children);
+  const intersects = raycaster.intersectObjects(scene.children[7].children);
+  draggable = intersects;
+}
+document.addEventListener("mouseup", onMouseUp);
+function onMouseUp(event) {
+   mousemove = new THREE.Vector3(
+    (event.clientX / window.innerWidth) * 2 - 1,
+    -(event.clientY / window.innerHeight) * 2 + 1
+  );
+}
+function mouseMove() {
+  document.addEventListener("mousemove", onMouseDrag);
+function onMouseDrag(event) {
+  raycaster.setFromCamera(mousemove, camera);
+  if (draggable.length> 0) {
+    for (let o of draggable) { 
+      if(o.object.name.includes("Vent")){
+        draggable[0].object.parent.position.x= (event.clientX / window.innerWidth) * 2 - 1,
+        draggable[0].object.parent.position.y= -(event.clientY / window.innerHeight) * 2 + 1
       }
     }
   }
+}
 }
 init();
 animate();
@@ -112,7 +147,6 @@ function init() {
   const light2 = new THREE.PointLight(0xffffff, 0.9, 100);
   light2.position.set(20, 30, 42);
   scene.add(light2);
-
   scene.add(light);
   const sphereSize = 1;
   const pointLightHelper = new THREE.PointLightHelper(
@@ -143,7 +177,6 @@ function init() {
     scene.add(object);
     object.traverse((child) => {
       console.log("vent child", child);
-      child.visible = true;
       if (child.isMesh && child.name.includes("Vent")) {
         addVent(child, 0xf0f0f0);
       }
@@ -176,7 +209,6 @@ function init() {
               value.name == "front_side")
           ) {
             console.log("wallText", textureWall.image);
-
             sideWall(value, 0x382c16);
           }
           if (
@@ -200,11 +232,9 @@ function init() {
         child.visible = false;
       }
     });
-
     scene.add(object);
     object.position.set(0, 0, 0);
     object.userData.name = "Roofing";
-
     object.scale.set(0.19, 0.19, 0.19);
   });
 
@@ -212,19 +242,16 @@ function init() {
   scene.add(axesHelper);
   /* ------------------------------ loading home ------------------------------ */
 }
-
 /* ----------------------- add the texture dynamically ---------------------- */
 function addBottom(child, color) {
   child.material = new THREE.MeshPhongMaterial();
   child.castShadow = true;
   child.receiveShadow = true;
-  // child.flatshading = true;
   child.material.map = textureBase;
   child.material.bumpScale = 0.08;
   child.material.map.wrapS = THREE.RepeatWrapping;
   child.material.map.wrapT = THREE.RepeatWrapping;
   child.material.color = new THREE.Color(color);
-
   child.userData.draggable = false;
   child.userData.name = "sidewall";
 }
@@ -283,18 +310,16 @@ function addVent(child) {
   child.userData.name = "vent";
   child.userData.limit = false;
 }
-
 /* --------------------------------- animate -------------------------------- */
 function animate() {
+  mouseMove()
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-
-  // light.position.x +=10
+  // light.position.x +=10;
   // light.position.y = camera.position.y;
   // light.position.z = camera.position.z;
   const delta = clock.getDelta();
   const hasControlsUpdated = cameraControls.update(delta);
-
   if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
     renderer.setSize(window.innerWidth, window.innerHeight);
