@@ -15,6 +15,9 @@ let camera,
   found,
   mousemove,
   mouse3D,
+  intersects,
+  xPosition,
+  yPosition,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
@@ -41,10 +44,9 @@ function onMouseDown(event) {
 
   raycaster.setFromCamera(mouse3D, camera);
 
-  const intersects = raycaster.intersectObjects(scene.children[7].children);
+   intersects = raycaster.intersectObjects(scene.children[7].children);
   console.log("parent", intersects);
   if (intersects[0]) {
-    mouseX = intersects[0].point.x;
     cameraControls.enabled = false;
     object = intersects[0].object;
     while (
@@ -53,6 +55,11 @@ function onMouseDown(event) {
     ) {
       object = object.parent;
     }
+ xPosition=object.position.x
+ yPosition=object.position.y
+    mouseX = object.position.x - intersects[0].point.x;
+
+    mouseY = object.position.y - intersects[0].point.y;
     draggable = object;
   } else {
     draggable = new THREE.Object3D();
@@ -60,6 +67,13 @@ function onMouseDown(event) {
 }
 document.addEventListener("mouseup", onMouseUp);
 function onMouseUp(event) {
+  if(wallIntersect<1 ){
+  console.log( draggable.position.x)
+    console.log(object.position.x )
+    draggable.position.x=xPosition
+    draggable.position.y= yPosition
+    intersects[1].object.material.depthTest=true
+  }
   mousedown = false;
   cameraControls.enabled = true;
 }
@@ -78,17 +92,25 @@ function onMouseDrag(event) {
   );
 
   if (draggable.name.includes("Exterior") && wallIntersect.length > 0) {
-    console.log("second", wallIntersect[0].point.x);
-    console.log("mouseX", mouseX);
-    const data = wallIntersect[0].point.x + mouseX;
-    console.log("Third", data);
-    draggable.position.x = wallIntersect[0].point.x;
-    console.log("Fourth", draggable.position.x);
+    if(intersects.length>1){
+      intersects[1].object.material.depthTest=true
+    }
+  
+    draggable.position.x = wallIntersect[0].point.x + mouseX;
 
-    draggable.position.y = wallIntersect[0].point.y;
+    draggable.position.y = wallIntersect[0].point.y + mouseY;
 
     //     }
     //   }
+  }else{
+    if(intersects.length>1){
+      console.log("changing color")
+      intersects[1].object.renderOrder=1
+      intersects[1].object.material.color=new THREE.Color(0xff0000)
+      intersects[1].object.material.depthTest=false
+    }
+    
+
   }
 }
 
@@ -228,12 +250,15 @@ function init() {
         child.visible = false;
       }
     });
-    scene.add(object);
+//  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+// composer.addPass( outlinePass );
+// outlinePass.selectedObjects = object;
 
     object.position.set(0, -15, 0);
     camera.lookAt(object.position);
     object.userData.name = "Roofing";
     object.scale.set(0.19, 0.19, 0.19);
+    scene.add(object);
   });
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
@@ -308,6 +333,8 @@ function addVent(child) {
   child.userData.limit = false;
   console.log(child.parent);
 }
+/* --------------------------- drawing an outline --------------------------- */
+
 /* --------------------------------- animate -------------------------------- */
 function animate() {
   requestAnimationFrame(animate);
