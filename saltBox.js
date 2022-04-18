@@ -1,6 +1,9 @@
 import { FBXLoader } from "/js/fbxloader.js";
 import CameraControls from "./js/camera-controls.module.js";
-
+import { EffectComposer } from "/js/EffectComposer.js";
+import { RenderPass } from "/js/RenderPass.js";
+import { GlitchPass } from "/js/GlitchPass.js";
+import { OutlinePass } from "/js/OutlinePass.js";
 let camera,
   scene,
   renderer,
@@ -18,6 +21,7 @@ let camera,
   intersects,
   xPosition,
   yPosition,
+  composer,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
@@ -30,6 +34,7 @@ let mousedown = false;
 let x = 0;
 let mouseX;
 let mouseY;
+
 
 /* -------------------- events to trigger the raycasting -------------------- */
 
@@ -68,8 +73,7 @@ function onMouseDown(event) {
 document.addEventListener("mouseup", onMouseUp);
 function onMouseUp(event) {
   if(wallIntersect<1 ){
-  console.log( draggable.position.x)
-    console.log(object.position.x )
+ 
     draggable.position.x=xPosition
     draggable.position.y= yPosition
     intersects[1].object.material.depthTest=true
@@ -90,7 +94,6 @@ function onMouseDrag(event) {
   wallIntersect = raycaster.intersectObjects(
     scene.children[8].children[0].children[0].children[2].children
   );
-
   if (draggable.name.includes("Exterior") && wallIntersect.length > 0) {
     if(intersects.length>1){
       intersects[1].object.material.depthTest=true
@@ -173,6 +176,19 @@ function init() {
     0xfff000
   );
   scene.add(pointLightHelper2);
+
+  /* ---------------------------- post proccessing ---------------------------- */
+  composer = new EffectComposer(renderer);
+  console.log(composer);
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  const glitchPass = new GlitchPass();
+//   composer.addPass(glitchPass);
+
+  const outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
+				// composer.addPass( outlinePass );
+                console.log(outlinePass)
   /* ----------------------------- camera controls ---------------------------- */
   CameraControls.install({ THREE: THREE });
   clock = new THREE.Clock();
@@ -338,10 +354,8 @@ function addVent(child) {
 /* --------------------------------- animate -------------------------------- */
 function animate() {
   requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-  // light.position.x +=10;
-  // light.position.y = camera.position.y;
-  // light.position.z = camera.position.z;
+  composer.render();
+  
   const delta = clock.getDelta();
   const hasControlsUpdated = cameraControls.update(delta);
   if (resizeRendererToDisplaySize(renderer)) {
