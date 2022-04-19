@@ -6,6 +6,8 @@ import { EffectComposer } from "/js/EffectComposer.js";
 import { RenderPass } from "/js/RenderPass.js";
 import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
+
+
 let scene, camera, renderer, cube, composer;
 
 init();
@@ -74,12 +76,13 @@ function init() {
   fbxLoader.load("Model/cottage_fbx.fbx", function (object) {
     object.traverse(function (child) {
       if (child.isMesh) {
+        
         child.castShadow = true;
         child.receiveShadow = false;
         child.flatshading = true;
       }
     });
-
+console.log(object)
     object.scale.set(0.01, 0.01, 0.01);
     var bbox = new THREE.Box3().setFromObject(object);
 

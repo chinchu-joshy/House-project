@@ -4,6 +4,7 @@ import { EffectComposer } from "/js/EffectComposer.js";
 import { RenderPass } from "/js/RenderPass.js";
 import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
+import { SMAAPass } from "/js/SMAAPass.js";
 let camera,
   scene,
   renderer,
@@ -22,6 +23,8 @@ let camera,
   xPosition,
   yPosition,
   composer,
+  outlinePass,
+  selectedObjects,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
@@ -34,7 +37,17 @@ let mousedown = false;
 let x = 0;
 let mouseX;
 let mouseY;
-
+const params = {
+  clipIntersection: true,
+  planeConstant: 0,
+  showHelpers: false,
+};
+/* ----------------------------- clipping plane ----------------------------- */
+let clipPlanes = [
+  new THREE.Plane(new THREE.Vector3(10, 0, 0), 10),
+  new THREE.Plane(new THREE.Vector3(0, -1, 0), 10),
+  new THREE.Plane(new THREE.Vector3(0, 0, -1), 10),
+];
 
 /* -------------------- events to trigger the raycasting -------------------- */
 
@@ -49,7 +62,7 @@ function onMouseDown(event) {
 
   raycaster.setFromCamera(mouse3D, camera);
 
-   intersects = raycaster.intersectObjects(scene.children[7].children);
+  intersects = raycaster.intersectObjects(scene.children[7].children);
   console.log("parent", intersects);
   if (intersects[0]) {
     cameraControls.enabled = false;
@@ -60,8 +73,8 @@ function onMouseDown(event) {
     ) {
       object = object.parent;
     }
- xPosition=object.position.x
- yPosition=object.position.y
+    xPosition = object.position.x;
+    yPosition = object.position.y;
     mouseX = object.position.x - intersects[0].point.x;
 
     mouseY = object.position.y - intersects[0].point.y;
@@ -72,11 +85,10 @@ function onMouseDown(event) {
 }
 document.addEventListener("mouseup", onMouseUp);
 function onMouseUp(event) {
-  if(wallIntersect<1 ){
- 
-    draggable.position.x=xPosition
-    draggable.position.y= yPosition
-    intersects[1].object.material.depthTest=true
+  if (wallIntersect < 1) {
+    draggable.position.x = xPosition;
+    draggable.position.y = yPosition;
+    intersects[1].object.material.depthTest = true;
   }
   mousedown = false;
   cameraControls.enabled = true;
@@ -95,28 +107,37 @@ function onMouseDrag(event) {
     scene.children[8].children[0].children[0].children[2].children
   );
   if (draggable.name.includes("Exterior") && wallIntersect.length > 0) {
-    if(intersects.length>1){
-      intersects[1].object.material.depthTest=true
+    if (intersects.length > 1) {
+      intersects[1].object.material.depthTest = true;
+      const selectedObject = intersects[0].object;
+      addSelectedObject(selectedObject);
+      outlinePass.selectedObjects = selectedObjects;
     }
-  
-    draggable.position.x = wallIntersect[0].point.x + mouseX;
+    // const side=draggable.clone()
+    // console.log("copy",side)
 
-    draggable.position.y = wallIntersect[0].point.y + mouseY;
+    // scene.add(side)
+   
+      draggable.position.x = wallIntersect[0].point.x + mouseX;
+
+      draggable.position.y = wallIntersect[0].point.y + mouseY;
 
     //     }
     //   }
-  }else{
-    if(intersects.length>1){
-      console.log("changing color")
-      intersects[1].object.renderOrder=1
-      intersects[1].object.material.color=new THREE.Color(0xff0000)
-      intersects[1].object.material.depthTest=false
+  } else {
+    if (intersects.length > 1) {
+      console.log("changing color");
+      intersects[1].object.renderOrder = 1;
+      intersects[1].object.material.color = new THREE.Color(0xff0000);
+      intersects[1].object.material.depthTest = false;
     }
-    
-
   }
 }
 
+function addSelectedObject(object) {
+  selectedObjects = [];
+  selectedObjects.push(object);
+}
 // if (mouseclick) {
 //   mouseMove();
 // }
@@ -137,11 +158,15 @@ function init() {
   camera.position.set(0, 0, 100);
 
   /* --------------------------------- render --------------------------------- */
-  renderer = new THREE.WebGL1Renderer({ antialias: true });
+  renderer = new THREE.WebGL1Renderer({
+    antialias: true,
+    logarithmicDepthBuffer: true,
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.localClippingEnabled = true;
   document.body.appendChild(renderer.domElement);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -184,11 +209,19 @@ function init() {
   composer.addPass(renderPass);
 
   const glitchPass = new GlitchPass();
-//   composer.addPass(glitchPass);
+  // composer.addPass(glitchPass);
 
-  const outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
-				// composer.addPass( outlinePass );
-                console.log(outlinePass)
+  outlinePass = new OutlinePass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    scene,
+    camera
+  );
+  composer.addPass(outlinePass);
+  const pass = new SMAAPass(
+    window.innerWidth * renderer.getPixelRatio(),
+    window.innerHeight * renderer.getPixelRatio()
+  );
+  composer.addPass(pass);
   /* ----------------------------- camera controls ---------------------------- */
   CameraControls.install({ THREE: THREE });
   clock = new THREE.Clock();
@@ -202,23 +235,30 @@ function init() {
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/vent.fbx", (object) => {
     window.vent = object.children[0].children[0];
+
     object.position.set(13, 34.8, 28.9);
     // object.position.set(13, 49.8, 14);
     scene.add(object);
     console.log(object);
+
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("Vent")) {
+        // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
+        // composer.addPass( pass );
+
         addVent(child);
       }
     });
   });
   fbxLoader.load("Model/model-3.fbx", function (object) {
     window.model = object;
+    // (draggable.children[0].material.clippingPlanes = clipPlanes),
+    // console.log(draggable)
     object.traverse(function (child) {
       if (child.isMesh && child.name.includes("Shed_SaltBox")) {
         addBottom(child, 0xf0f0f0);
         window.child = child;
-        window.changeBottomColor = addBottom;
+       
       }
       if (child.isMesh && child.name.includes("Trim")) {
         Trim(child, 0x5d665f);
@@ -266,15 +306,21 @@ function init() {
         child.visible = false;
       }
     });
-//  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-// composer.addPass( outlinePass );
-// outlinePass.selectedObjects = object;
+    //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+    // composer.addPass( outlinePass );
 
     object.position.set(0, -15, 0);
     camera.lookAt(object.position);
     object.userData.name = "Roofing";
     object.scale.set(0.19, 0.19, 0.19);
     scene.add(object);
+    // var outlineMaterial1 = new THREE.MeshBasicMaterial({
+    //   color: 0xff0000,
+    //   wireframe: true,
+    // });
+    // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
+
+    // scene.add(outlineMesh1);
   });
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
@@ -292,6 +338,7 @@ function addBottom(child, color) {
   child.material.color = new THREE.Color(color);
   child.userData.draggable = false;
   child.userData.name = "sidewall";
+  child.material.clippingPlanes=clipPlanes
 }
 function sideWall(value, color) {
   value.material = new THREE.MeshStandardMaterial();
@@ -307,6 +354,11 @@ function sideWall(value, color) {
   value.userData.draggable = false;
   value.userData.name = "wall";
   value.userData.limit = true;
+  
+  
+  // var helper = new THREE.BoundingBoxHelper(value, 0xff0000);
+  // scene.add(helper)
+  var bbox = new THREE.Box3().setFromObject(value);
 }
 function Trim(child, color) {
   child.material = new THREE.MeshPhongMaterial();
@@ -355,7 +407,7 @@ function addVent(child) {
 function animate() {
   requestAnimationFrame(animate);
   composer.render();
-  
+
   const delta = clock.getDelta();
   const hasControlsUpdated = cameraControls.update(delta);
   if (resizeRendererToDisplaySize(renderer)) {
