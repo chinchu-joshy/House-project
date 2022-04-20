@@ -5,6 +5,7 @@ import { RenderPass } from "/js/RenderPass.js";
 import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
 import { SMAAPass } from "/js/SMAAPass.js";
+
 let camera,
   scene,
   renderer,
@@ -25,6 +26,7 @@ let camera,
   composer,
   outlinePass,
   selectedObjects,
+  bbox,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
@@ -43,11 +45,19 @@ const params = {
   showHelpers: false,
 };
 /* ----------------------------- clipping plane ----------------------------- */
-let clipPlanes = [
-  new THREE.Plane(new THREE.Vector3(10, 0, 0), 10),
-  new THREE.Plane(new THREE.Vector3(0, -1, 0), 10),
-  new THREE.Plane(new THREE.Vector3(0, 0, -1), 10),
-];
+function createClippingPlane(bXMin, bXMax, bYMin, bYMax) {
+  let plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+  plane1.translate(new THREE.Vector3(bXMax, 0, 0));
+  let plane2 = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+  plane2.translate(new THREE.Vector3(bXMin, 0, 0));
+  let plane3 = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+  plane3.translate(new THREE.Vector3(0, bYMin, 0));
+  let plane4 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  plane4.translate(new THREE.Vector3(0, bYMax, 0));
+  let plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+  let clipPlanes = [plane1, plane2, plane3, plane4, plane5];
+  return clipPlanes;
+}
 
 /* -------------------- events to trigger the raycasting -------------------- */
 
@@ -63,10 +73,12 @@ function onMouseDown(event) {
   raycaster.setFromCamera(mouse3D, camera);
 
   intersects = raycaster.intersectObjects(scene.children[7].children);
-  console.log("parent", intersects);
+
   if (intersects[0]) {
     cameraControls.enabled = false;
     object = intersects[0].object;
+    bbox = new THREE.Box3().setFromObject(intersects[0].object);
+
     while (
       !(object instanceof THREE.Scene) &&
       !object.name.includes("Exterior")
@@ -92,6 +104,19 @@ function onMouseUp(event) {
   }
   mousedown = false;
   cameraControls.enabled = true;
+  bbox = null;
+  const val = wallIntersect
+    .filter((data) => {
+      if (data.object.name.includes("front")) {
+        return data;
+      } else {
+        return;
+      }
+    })
+    .map((value) => {
+      value.object.material.clippingPlanes = null;
+      value.object.material.clipIntersection = false;
+    });
 }
 document.addEventListener("mousemove", onMouseDrag);
 function onMouseDrag(event) {
@@ -106,6 +131,24 @@ function onMouseDrag(event) {
   wallIntersect = raycaster.intersectObjects(
     scene.children[8].children[0].children[0].children[2].children
   );
+  const val = wallIntersect
+    .filter((data) => {
+      if (data.object.name.includes("front")) {
+        return data;
+      } else {
+        return;
+      }
+    })
+    .map((value) => {
+      value.object.material.clippingPlanes = createClippingPlane(
+        bbox.min.x,
+        bbox.max.x,
+        bbox.min.y,
+        bbox.max.y
+      );
+      value.object.material.clipIntersection = true;
+    });
+
   if (draggable.name.includes("Exterior") && wallIntersect.length > 0) {
     if (intersects.length > 1) {
       intersects[1].object.material.depthTest = true;
@@ -113,20 +156,22 @@ function onMouseDrag(event) {
       addSelectedObject(selectedObject);
       outlinePass.selectedObjects = selectedObjects;
     }
+    //   value.material.clippingPlanes = clipPlanes;
+    // value.material.clipIntersection = true;
+    // console.log("clipping find", value);
     // const side=draggable.clone()
     // console.log("copy",side)
 
     // scene.add(side)
-   
-      draggable.position.x = wallIntersect[0].point.x + mouseX;
 
-      draggable.position.y = wallIntersect[0].point.y + mouseY;
+    draggable.position.x = wallIntersect[0].point.x + mouseX;
+
+    draggable.position.y = wallIntersect[0].point.y + mouseY;
 
     //     }
     //   }
   } else {
     if (intersects.length > 1) {
-      console.log("changing color");
       intersects[1].object.renderOrder = 1;
       intersects[1].object.material.color = new THREE.Color(0xff0000);
       intersects[1].object.material.depthTest = false;
@@ -239,13 +284,11 @@ function init() {
     object.position.set(13, 34.8, 28.9);
     // object.position.set(13, 49.8, 14);
     scene.add(object);
-    console.log(object);
 
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("Vent")) {
         // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
         // composer.addPass( pass );
-
         addVent(child);
       }
     });
@@ -258,7 +301,6 @@ function init() {
       if (child.isMesh && child.name.includes("Shed_SaltBox")) {
         addBottom(child, 0xf0f0f0);
         window.child = child;
-       
       }
       if (child.isMesh && child.name.includes("Trim")) {
         Trim(child, 0x5d665f);
@@ -324,6 +366,15 @@ function init() {
   });
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
+  // const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
+  // console.log(Phelper);
+  // scene.add(Phelper);
+  // const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
+
+  // scene.add(Phelper2);
+  // const Phelper3 = new THREE.PlaneHelper(clipPlanes[2], 80, 0x000ff0);
+
+  // scene.add(Phelper3);
   /* ------------------------------ loading home ------------------------------ */
 }
 /* ----------------------- add the texture dynamically ---------------------- */
@@ -338,7 +389,6 @@ function addBottom(child, color) {
   child.material.color = new THREE.Color(color);
   child.userData.draggable = false;
   child.userData.name = "sidewall";
-  child.material.clippingPlanes=clipPlanes
 }
 function sideWall(value, color) {
   value.material = new THREE.MeshStandardMaterial();
@@ -354,11 +404,9 @@ function sideWall(value, color) {
   value.userData.draggable = false;
   value.userData.name = "wall";
   value.userData.limit = true;
-  
-  
+
   // var helper = new THREE.BoundingBoxHelper(value, 0xff0000);
   // scene.add(helper)
-  var bbox = new THREE.Box3().setFromObject(value);
 }
 function Trim(child, color) {
   child.material = new THREE.MeshPhongMaterial();

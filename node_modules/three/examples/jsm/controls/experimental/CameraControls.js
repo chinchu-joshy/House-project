@@ -6,7 +6,7 @@ import {
 	TOUCH,
 	Vector2,
 	Vector3
-} from 'three';
+} from '../../../../build/three.module.js';
 
 var CameraControls = function ( object, domElement ) {
 
@@ -157,7 +157,7 @@ var CameraControls = function ( object, domElement ) {
 
 					vec.set( 0, 1, 0 ).applyQuaternion( scope.object.quaternion );
 
-					const factor = ( scope.enableDamping ) ? scope.dampingFactor : 1;
+					var factor = ( scope.enableDamping ) ? scope.dampingFactor : 1;
 
 					q.setFromAxisAngle( vec, sphericalDelta.theta * factor );
 
@@ -172,7 +172,7 @@ var CameraControls = function ( object, domElement ) {
 
 					vec.set( 1, 0, 0 ).applyQuaternion( scope.object.quaternion );
 
-					const factor = ( scope.enableDamping ) ? scope.dampingFactor : 1;
+					var factor = ( scope.enableDamping ) ? scope.dampingFactor : 1;
 
 					q.setFromAxisAngle( vec, sphericalDelta.phi * factor );
 

@@ -1,63 +1,58 @@
-( function () {
-
-	/**
+/**
  * Afterimage shader
  * I created this effect inspired by a demo on codepen:
  * https://codepen.io/brunoimbrizi/pen/MoRJaN?page=1&
  */
-	const AfterimageShader = {
-		uniforms: {
-			'damp': {
-				value: 0.96
-			},
-			'tOld': {
-				value: null
-			},
-			'tNew': {
-				value: null
-			}
-		},
-		vertexShader:
-  /* glsl */
-  `
 
-		varying vec2 vUv;
+THREE.AfterimageShader = {
 
-		void main() {
+	uniforms: {
 
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		'damp': { value: 0.96 },
+		'tOld': { value: null },
+		'tNew': { value: null }
 
-		}`,
-		fragmentShader:
-  /* glsl */
-  `
+	},
 
-		uniform float damp;
+	vertexShader: [
 
-		uniform sampler2D tOld;
-		uniform sampler2D tNew;
+		'varying vec2 vUv;',
 
-		varying vec2 vUv;
+		'void main() {',
 
-		vec4 when_gt( vec4 x, float y ) {
+		'	vUv = uv;',
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-			return max( sign( x - y ), 0.0 );
+		'}'
 
-		}
+	].join( '\n' ),
 
-		void main() {
+	fragmentShader: [
 
-			vec4 texelOld = texture2D( tOld, vUv );
-			vec4 texelNew = texture2D( tNew, vUv );
+		'uniform float damp;',
 
-			texelOld *= damp * when_gt( texelOld, 0.1 );
+		'uniform sampler2D tOld;',
+		'uniform sampler2D tNew;',
 
-			gl_FragColor = max(texelNew, texelOld);
+		'varying vec2 vUv;',
 
-		}`
-	};
+		'vec4 when_gt( vec4 x, float y ) {',
 
-	THREE.AfterimageShader = AfterimageShader;
+		'	return max( sign( x - y ), 0.0 );',
 
-} )();
+		'}',
+
+		'void main() {',
+
+		'	vec4 texelOld = texture2D( tOld, vUv );',
+		'	vec4 texelNew = texture2D( tNew, vUv );',
+
+		'	texelOld *= damp * when_gt( texelOld, 0.1 );',
+
+		'	gl_FragColor = max(texelNew, texelOld);',
+
+		'}'
+
+	].join( '\n' )
+
+};

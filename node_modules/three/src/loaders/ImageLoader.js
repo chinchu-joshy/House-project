@@ -1,6 +1,5 @@
 import { Cache } from './Cache.js';
 import { Loader } from './Loader.js';
-import { createElementNS } from '../utils.js';
 
 class ImageLoader extends Loader {
 
@@ -36,11 +35,12 @@ class ImageLoader extends Loader {
 
 		}
 
-		const image = createElementNS( 'img' );
+		const image = document.createElementNS( 'http://www.w3.org/1999/xhtml', 'img' );
 
 		function onImageLoad() {
 
-			removeEventListeners();
+			image.removeEventListener( 'load', onImageLoad, false );
+			image.removeEventListener( 'error', onImageError, false );
 
 			Cache.add( url, this );
 
@@ -52,7 +52,8 @@ class ImageLoader extends Loader {
 
 		function onImageError( event ) {
 
-			removeEventListeners();
+			image.removeEventListener( 'load', onImageLoad, false );
+			image.removeEventListener( 'error', onImageError, false );
 
 			if ( onError ) onError( event );
 
@@ -61,17 +62,10 @@ class ImageLoader extends Loader {
 
 		}
 
-		function removeEventListeners() {
-
-			image.removeEventListener( 'load', onImageLoad, false );
-			image.removeEventListener( 'error', onImageError, false );
-
-		}
-
 		image.addEventListener( 'load', onImageLoad, false );
 		image.addEventListener( 'error', onImageError, false );
 
-		if ( url.slice( 0, 5 ) !== 'data:' ) {
+		if ( url.substr( 0, 5 ) !== 'data:' ) {
 
 			if ( this.crossOrigin !== undefined ) image.crossOrigin = this.crossOrigin;
 

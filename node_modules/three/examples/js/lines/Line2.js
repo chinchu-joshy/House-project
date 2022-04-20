@@ -1,20 +1,18 @@
-( function () {
+THREE.Line2 = function ( geometry, material ) {
 
-	class Line2 extends THREE.LineSegments2 {
+	if ( geometry === undefined ) geometry = new THREE.LineGeometry();
+	if ( material === undefined ) material = new THREE.LineMaterial( { color: Math.random() * 0xffffff } );
 
-		constructor( geometry = new THREE.LineGeometry(), material = new THREE.LineMaterial( {
-			color: Math.random() * 0xffffff
-		} ) ) {
+	THREE.LineSegments2.call( this, geometry, material );
 
-			super( geometry, material );
-			this.type = 'Line2';
+	this.type = 'Line2';
 
-		}
+};
 
-	}
+THREE.Line2.prototype = Object.assign( Object.create( THREE.LineSegments2.prototype ), {
 
-	Line2.prototype.isLine2 = true;
+	constructor: THREE.Line2,
 
-	THREE.Line2 = Line2;
+	isLine2: true
 
-} )();
+} );

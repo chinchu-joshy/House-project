@@ -1,38 +1,50 @@
-( function () {
-
-	/**
+/**
  * See https://github.com/kchapelier/PRWM for more informations about this file format
  */
 
-	let bigEndianPlatform = null;
+THREE.PRWMLoader = ( function () {
+
+	var bigEndianPlatform = null;
+
 	/**
 	 * Check if the endianness of the platform is big-endian (most significant bit first)
 	 * @returns {boolean} True if big-endian, false if little-endian
 	 */
-
 	function isBigEndianPlatform() {
 
 		if ( bigEndianPlatform === null ) {
 
-			const buffer = new ArrayBuffer( 2 ),
+			var buffer = new ArrayBuffer( 2 ),
 				uint8Array = new Uint8Array( buffer ),
 				uint16Array = new Uint16Array( buffer );
+
 			uint8Array[ 0 ] = 0xAA; // set first byte
-
 			uint8Array[ 1 ] = 0xBB; // set second byte
-
-			bigEndianPlatform = uint16Array[ 0 ] === 0xAABB;
+			bigEndianPlatform = ( uint16Array[ 0 ] === 0xAABB );
 
 		}
 
 		return bigEndianPlatform;
 
-	} // match the values defined in the spec to the TypedArray types
+	}
 
+	// match the values defined in the spec to the TypedArray types
+	var InvertedEncodingTypes = [
+		null,
+		Float32Array,
+		null,
+		Int8Array,
+		Int16Array,
+		null,
+		Int32Array,
+		Uint8Array,
+		Uint16Array,
+		null,
+		Uint32Array
+	];
 
-	const InvertedEncodingTypes = [ null, Float32Array, null, Int8Array, Int16Array, null, Int32Array, Uint8Array, Uint16Array, null, Uint32Array ]; // define the method to use on a DataView, corresponding the TypedArray type
-
-	const getMethods = {
+	// define the method to use on a DataView, corresponding the TypedArray type
+	var getMethods = {
 		Uint16Array: 'getUint16',
 		Uint32Array: 'getUint32',
 		Int16Array: 'getInt16',
@@ -41,10 +53,11 @@
 		Float64Array: 'getFloat64'
 	};
 
+
 	function copyFromBuffer( sourceArrayBuffer, viewType, position, length, fromBigEndian ) {
 
-		const bytesPerElement = viewType.BYTES_PER_ELEMENT;
-		let result;
+		var bytesPerElement = viewType.BYTES_PER_ELEMENT,
+			result;
 
 		if ( fromBigEndian === isBigEndianPlatform() || bytesPerElement === 1 ) {
 
@@ -52,12 +65,14 @@
 
 		} else {
 
-			const readView = new DataView( sourceArrayBuffer, position, length * bytesPerElement ),
+			var readView = new DataView( sourceArrayBuffer, position, length * bytesPerElement ),
 				getMethod = getMethods[ viewType.name ],
-				littleEndian = ! fromBigEndian;
+				littleEndian = ! fromBigEndian,
+				i = 0;
+
 			result = new viewType( length );
 
-			for ( let i = 0; i < length; i ++ ) {
+			for ( ; i < length; i ++ ) {
 
 				result[ i ] = readView[ getMethod ]( i * bytesPerElement, littleEndian );
 
@@ -69,16 +84,17 @@
 
 	}
 
+
 	function decodePrwm( buffer ) {
 
-		const array = new Uint8Array( buffer ),
-			version = array[ 0 ];
-		let flags = array[ 1 ];
-		const indexedGeometry = !! ( flags >> 7 & 0x01 ),
+		var array = new Uint8Array( buffer ),
+			version = array[ 0 ],
+			flags = array[ 1 ],
+			indexedGeometry = !! ( flags >> 7 & 0x01 ),
 			indicesType = flags >> 6 & 0x01,
 			bigEndian = ( flags >> 5 & 0x01 ) === 1,
-			attributesNumber = flags & 0x1F;
-		let valuesNumber = 0,
+			attributesNumber = flags & 0x1F,
+			valuesNumber = 0,
 			indicesNumber = 0;
 
 		if ( bigEndian ) {
@@ -92,8 +108,8 @@
 			indicesNumber = array[ 5 ] + ( array[ 6 ] << 8 ) + ( array[ 7 ] << 16 );
 
 		}
-		/** PRELIMINARY CHECKS **/
 
+		/** PRELIMINARY CHECKS **/
 
 		if ( version === 0 ) {
 
@@ -118,19 +134,29 @@
 			}
 
 		}
+
 		/** PARSING **/
 
+		var pos = 8;
 
-		let pos = 8;
-		const attributes = {};
+		var attributes = {},
+			attributeName,
+			char,
+			attributeType,
+			cardinality,
+			encodingType,
+			arrayType,
+			values,
+			indices,
+			i;
 
-		for ( let i = 0; i < attributesNumber; i ++ ) {
+		for ( i = 0; i < attributesNumber; i ++ ) {
 
-			let attributeName = '';
+			attributeName = '';
 
 			while ( pos < array.length ) {
 
-				const char = array[ pos ];
+				char = array[ pos ];
 				pos ++;
 
 				if ( char === 0 ) {
@@ -146,15 +172,21 @@
 			}
 
 			flags = array[ pos ];
-			const attributeType = flags >> 7 & 0x01;
-			const cardinality = ( flags >> 4 & 0x03 ) + 1;
-			const encodingType = flags & 0x0F;
-			const arrayType = InvertedEncodingTypes[ encodingType ];
-			pos ++; // padding to next multiple of 4
 
+			attributeType = flags >> 7 & 0x01;
+			cardinality = ( flags >> 4 & 0x03 ) + 1;
+			encodingType = flags & 0x0F;
+			arrayType = InvertedEncodingTypes[ encodingType ];
+
+			pos ++;
+
+			// padding to next multiple of 4
 			pos = Math.ceil( pos / 4 ) * 4;
-			const values = copyFromBuffer( buffer, arrayType, pos, cardinality * valuesNumber, bigEndian );
+
+			values = copyFromBuffer( buffer, arrayType, pos, cardinality * valuesNumber, bigEndian );
+
 			pos += arrayType.BYTES_PER_ELEMENT * cardinality * valuesNumber;
+
 			attributes[ attributeName ] = {
 				type: attributeType,
 				cardinality: cardinality,
@@ -164,11 +196,18 @@
 		}
 
 		pos = Math.ceil( pos / 4 ) * 4;
-		let indices = null;
+
+		indices = null;
 
 		if ( indexedGeometry ) {
 
-			indices = copyFromBuffer( buffer, indicesType === 1 ? Uint32Array : Uint16Array, pos, indicesNumber, bigEndian );
+			indices = copyFromBuffer(
+				buffer,
+				indicesType === 1 ? Uint32Array : Uint16Array,
+				pos,
+				indicesNumber,
+				bigEndian
+			);
 
 		}
 
@@ -178,26 +217,32 @@
 			indices: indices
 		};
 
-	} // Define the public interface
+	}
 
+	// Define the public interface
 
-	class PRWMLoader extends THREE.Loader {
+	function PRWMLoader( manager ) {
 
-		constructor( manager ) {
+		THREE.Loader.call( this, manager );
 
-			super( manager );
+	}
 
-		}
+	PRWMLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype ), {
 
-		load( url, onLoad, onProgress, onError ) {
+		constructor: PRWMLoader,
 
-			const scope = this;
-			const loader = new THREE.FileLoader( scope.manager );
+		load: function ( url, onLoad, onProgress, onError ) {
+
+			var scope = this;
+
+			var loader = new THREE.FileLoader( scope.manager );
 			loader.setPath( scope.path );
 			loader.setResponseType( 'arraybuffer' );
 			loader.setRequestHeader( scope.requestHeader );
 			loader.setWithCredentials( scope.withCredentials );
+
 			url = url.replace( /\*/g, isBigEndianPlatform() ? 'be' : 'le' );
+
 			loader.load( url, function ( arrayBuffer ) {
 
 				try {
@@ -222,17 +267,19 @@
 
 			}, onProgress, onError );
 
-		}
+		},
 
-		parse( arrayBuffer ) {
+		parse: function ( arrayBuffer ) {
 
-			const data = decodePrwm( arrayBuffer ),
+			var data = decodePrwm( arrayBuffer ),
 				attributesKey = Object.keys( data.attributes ),
-				bufferGeometry = new THREE.BufferGeometry();
+				bufferGeometry = new THREE.BufferGeometry(),
+				attribute,
+				i;
 
-			for ( let i = 0; i < attributesKey.length; i ++ ) {
+			for ( i = 0; i < attributesKey.length; i ++ ) {
 
-				const attribute = data.attributes[ attributesKey[ i ] ];
+				attribute = data.attributes[ attributesKey[ i ] ];
 				bufferGeometry.setAttribute( attributesKey[ i ], new THREE.BufferAttribute( attribute.values, attribute.cardinality, attribute.normalized ) );
 
 			}
@@ -247,14 +294,14 @@
 
 		}
 
-		static isBigEndianPlatform() {
+	} );
 
-			return isBigEndianPlatform();
+	PRWMLoader.isBigEndianPlatform = function () {
 
-		}
+		return isBigEndianPlatform();
 
-	}
+	};
 
-	THREE.PRWMLoader = PRWMLoader;
+	return PRWMLoader;
 
 } )();

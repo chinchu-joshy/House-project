@@ -1,49 +1,48 @@
-( function () {
-
-	/**
+/**
  * Luminosity
  * http://en.wikipedia.org/wiki/Luminosity
  */
-	const LuminosityShader = {
-		uniforms: {
-			'tDiffuse': {
-				value: null
-			}
-		},
-		vertexShader:
-  /* glsl */
-  `
 
-		varying vec2 vUv;
+THREE.LuminosityShader = {
 
-		void main() {
+	uniforms: {
 
-			vUv = uv;
+		'tDiffuse': { value: null }
 
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	},
 
-		}`,
-		fragmentShader:
-  /* glsl */
-  `
+	vertexShader: [
 
-		#include <common>
+		'varying vec2 vUv;',
 
-		uniform sampler2D tDiffuse;
+		'void main() {',
 
-		varying vec2 vUv;
+		'	vUv = uv;',
 
-		void main() {
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-			vec4 texel = texture2D( tDiffuse, vUv );
+		'}'
 
-			float l = linearToRelativeLuminance( texel.rgb );
+	].join( '\n' ),
 
-			gl_FragColor = vec4( l, l, l, texel.w );
+	fragmentShader: [
 
-		}`
-	};
+		'#include <common>',
 
-	THREE.LuminosityShader = LuminosityShader;
+		'uniform sampler2D tDiffuse;',
 
-} )();
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'	vec4 texel = texture2D( tDiffuse, vUv );',
+
+		'	float l = linearToRelativeLuminance( texel.rgb );',
+
+		'	gl_FragColor = vec4( l, l, l, texel.w );',
+
+		'}'
+
+	].join( '\n' )
+
+};

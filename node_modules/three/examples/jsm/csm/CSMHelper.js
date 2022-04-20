@@ -10,7 +10,7 @@ import {
 	MeshBasicMaterial,
 	BufferAttribute,
 	DoubleSide
-} from 'three';
+} from '../../../build/three.module.js';
 
 class CSMHelper extends Group {
 
