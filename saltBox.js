@@ -18,7 +18,7 @@ let camera,
   textureRoof,
   ventTexture,
   found,
-  mousemove,
+  startpoint,
   mouse3D,
   intersects,
   xPosition,
@@ -27,12 +27,17 @@ let camera,
   outlinePass,
   selectedObjects,
   bbox,
+  bbox2,
+  mainpoint,
+  endpoint,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
+var far = new THREE.Vector3();
 const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
 var draggable = new THREE.Object3D();
+var direction = new THREE.Vector3();
 let object = [];
 let wallIntersect = [];
 let mousedown = false;
@@ -69,30 +74,109 @@ function onMouseDown(event) {
     (event.clientX / window.innerWidth) * 2 - 1,
     -(event.clientY / window.innerHeight) * 2 + 1
   );
-
   raycaster.setFromCamera(mouse3D, camera);
 
-  intersects = raycaster.intersectObjects(scene.children[7].children);
-
+  intersects = raycaster.intersectObjects(scene.children);
+  console.log("intersecting the scene", intersects);
   if (intersects[0]) {
-    cameraControls.enabled = false;
     object = intersects[0].object;
     bbox = new THREE.Box3().setFromObject(intersects[0].object);
-
+    // Double__Door
     while (
       !(object instanceof THREE.Scene) &&
+      !object.name.includes("SaltBox") &&
+      !object.name.includes("front_outline") &&
+      !object.name.includes("Double__Door") &&
       !object.name.includes("Exterior")
     ) {
       object = object.parent;
     }
-    xPosition = object.position.x;
-    yPosition = object.position.y;
-    mouseX = object.position.x - intersects[0].point.x;
-
-    mouseY = object.position.y - intersects[0].point.y;
-    draggable = object;
+    if (object.userData.draggable) {
+      cameraControls.enabled = false;
+      xPosition = object.position.x;
+      yPosition = object.position.y;
+      mouseX = object.position.x - intersects[0].point.x;
+      mouseY = object.position.y - intersects[0].point.y;
+      draggable = object;
+    } else {
+      draggable = new THREE.Object3D();
+    }
   } else {
+    console.log("not getting the value");
     draggable = new THREE.Object3D();
+  }
+}
+document.addEventListener("mousemove", onMouseDrag);
+function onMouseDrag(event) {
+  if (!mousedown) {
+    return;
+  }
+  // mousemove = new THREE.Vector3(
+  //   (event.clientX / window.innerWidth) * 2 - 1,
+  //   -(event.clientY / window.innerHeight) * 2 + 1
+  // );
+  if (draggable.userData.draggable) {
+    bbox2 = new THREE.Box3().setFromObject(intersects[0].object);
+    startpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, bbox.max.z);
+    endpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
+    // console.log("starting pint", startpoint, "ending point", endpoint);
+    raycaster.set(
+      startpoint,
+      direction.subVectors(endpoint, startpoint).normalize()
+    );
+    // raycaster.far = far.subVectors(mainpoint.position, startpoint).length();
+    wallIntersect = raycaster.intersectObjects(
+      scene.children
+    );
+   
+    const val = wallIntersect
+      .filter((data) => {
+        if (data.object.name.includes("front")) {
+        
+          return data;
+        } else {
+          return;
+        }
+      })
+      .map((value) => {
+        if (value && intersects[0]) {
+          value.object.material.clippingPlanes = createClippingPlane(
+            bbox.min.x,
+            bbox.max.x,
+            bbox.min.y,
+            bbox.max.y
+          );
+          value.object.material.clipIntersection = true;
+        } else return;
+      });
+  }
+
+  // raycaster.setFromCamera(mousemove, camera);
+
+  if (draggable.userData.draggable && wallIntersect.length > 0) {
+    console.log("before",draggable.position.x)
+   
+    if (intersects.length > 1) {
+      intersects[1].object.material.depthTest = true;
+     
+      const selectedObject = intersects[0].object;
+      addSelectedObject(selectedObject);
+      outlinePass.selectedObjects = selectedObjects;
+    }
+    
+    draggable.position.x = wallIntersect[0].point.x -mouseX
+    draggable.position.y = wallIntersect[0].point.y - mouseY;
+    console.log("after",draggable.position.x)
+    draggable.updateMatrixWorld();
+  //   //     }
+   }
+  // }
+   else {
+    if (draggable.userData.draggable) {
+      intersects[1].object.renderOrder = 1;
+      intersects[1].object.material.color = new THREE.Color(0xff0000);
+      intersects[1].object.material.depthTest = false;
+    }
   }
 }
 document.addEventListener("mouseup", onMouseUp);
@@ -118,67 +202,6 @@ function onMouseUp(event) {
       value.object.material.clipIntersection = false;
     });
 }
-document.addEventListener("mousemove", onMouseDrag);
-function onMouseDrag(event) {
-  if (!mousedown) {
-    return;
-  }
-  mousemove = new THREE.Vector3(
-    (event.clientX / window.innerWidth) * 2 - 1,
-    -(event.clientY / window.innerHeight) * 2 + 1
-  );
-  raycaster.setFromCamera(mousemove, camera);
-  wallIntersect = raycaster.intersectObjects(
-    scene.children[8].children[0].children[0].children[2].children
-  );
-  const val = wallIntersect
-    .filter((data) => {
-      if (data.object.name.includes("front")) {
-        return data;
-      } else {
-        return;
-      }
-    })
-    .map((value) => {
-      value.object.material.clippingPlanes = createClippingPlane(
-        bbox.min.x,
-        bbox.max.x,
-        bbox.min.y,
-        bbox.max.y
-      );
-      value.object.material.clipIntersection = true;
-    });
-
-  if (draggable.name.includes("Exterior") && wallIntersect.length > 0) {
-    if (intersects.length > 1) {
-      intersects[1].object.material.depthTest = true;
-      const selectedObject = intersects[0].object;
-      addSelectedObject(selectedObject);
-      outlinePass.selectedObjects = selectedObjects;
-    }
-    //   value.material.clippingPlanes = clipPlanes;
-    // value.material.clipIntersection = true;
-    // console.log("clipping find", value);
-    // const side=draggable.clone()
-    // console.log("copy",side)
-
-    // scene.add(side)
-
-    draggable.position.x = wallIntersect[0].point.x + mouseX;
-
-    draggable.position.y = wallIntersect[0].point.y + mouseY;
-
-    //     }
-    //   }
-  } else {
-    if (intersects.length > 1) {
-      intersects[1].object.renderOrder = 1;
-      intersects[1].object.material.color = new THREE.Color(0xff0000);
-      intersects[1].object.material.depthTest = false;
-    }
-  }
-}
-
 function addSelectedObject(object) {
   selectedObjects = [];
   selectedObjects.push(object);
@@ -201,7 +224,6 @@ function init() {
     1000
   );
   camera.position.set(0, 0, 100);
-
   /* --------------------------------- render --------------------------------- */
   renderer = new THREE.WebGL1Renderer({
     antialias: true,
@@ -249,13 +271,9 @@ function init() {
 
   /* ---------------------------- post proccessing ---------------------------- */
   composer = new EffectComposer(renderer);
-  console.log(composer);
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
-
   const glitchPass = new GlitchPass();
-  // composer.addPass(glitchPass);
-
   outlinePass = new OutlinePass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     scene,
@@ -280,10 +298,8 @@ function init() {
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/vent.fbx", (object) => {
     window.vent = object.children[0].children[0];
-
     object.position.set(13, 34.8, 28.9);
     // object.position.set(13, 49.8, 14);
-    scene.add(object);
 
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("Vent")) {
@@ -292,6 +308,41 @@ function init() {
         addVent(child);
       }
     });
+    scene.add(object);
+    object.userData.draggable = true;
+  });
+  fbxLoader.load("Model/doubleDoor.fbx", (object) => {
+    window.Door = object.children[0].children[0];
+    console.log("door", object);
+    object.traverse((child) => {
+      if (child.isMesh && child.name.includes("ramp")) {
+        child.visible = false;
+      }
+      if (child.isMesh && child.name.includes("DoorWood")) {
+        console.log("door child", child);
+        child.material = new THREE.MeshPhongMaterial();
+        child.bumpMap = textureWall;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material.map = textureWall;
+        child.material.bumpScale = 0.08;
+        child.material.map.wrapS = THREE.RepeatWrapping;
+        child.material.map.wrapT = THREE.RepeatWrapping;
+        child.material.color = new THREE.Color(0x382c16);
+        child.userData.draggable = true;
+        child.userData.name = "door";
+        child.material.needsUpdate = true;
+        // child.material.bumpMap.needsUpdate = true;
+      }
+      if (child.name.includes("Awning")) {
+        child.visible = false;
+      }
+    });
+    object.position.set(7, 8, 29);
+    object.scale.set(0.19, 0.19, 0.19);
+    object.rotation.y = Math.PI / 2;
+    object.userData.draggable = true;
+    scene.add(object);
   });
   fbxLoader.load("Model/model-3.fbx", function (object) {
     window.model = object;
@@ -303,7 +354,7 @@ function init() {
         window.child = child;
       }
       if (child.isMesh && child.name.includes("Trim")) {
-        Trim(child, 0x5d665f);
+        Trim(child, 0xfff0f2f5);
       }
       if (child.name.includes("Ridge_Cap")) {
         child.visible = false;
@@ -312,7 +363,6 @@ function init() {
         child.visible = false;
       }
       if (child.name.includes("EXTERIOR_OPTIONS")) {
-        console.log("vent hide", child);
         child.visible = false;
       }
       if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
@@ -324,7 +374,6 @@ function init() {
               value.name == "right_side" ||
               value.name == "front_side")
           ) {
-            console.log("wallText", textureWall.image);
             sideWall(value, 0x382c16);
           }
           if (
@@ -355,7 +404,9 @@ function init() {
     camera.lookAt(object.position);
     object.userData.name = "Roofing";
     object.scale.set(0.19, 0.19, 0.19);
+    object.userData.draggable = false;
     scene.add(object);
+    mainpoint = object;
     // var outlineMaterial1 = new THREE.MeshBasicMaterial({
     //   color: 0xff0000,
     //   wireframe: true,
@@ -448,6 +499,9 @@ function addVent(child) {
   child.userData.name = "vent";
   child.userData.limit = false;
   console.log(child.parent);
+}
+function addDoor(child) {
+  child.material.bumpMap = textureWall;
 }
 /* --------------------------- drawing an outline --------------------------- */
 
