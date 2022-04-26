@@ -33,6 +33,7 @@ let camera,
   obj;
 /* -------------------------------- constants ------------------------------- */
 const raycaster = new THREE.Raycaster();
+const raycster2=new THREE.Raycaster()
 var far = new THREE.Vector3();
 const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
@@ -50,17 +51,32 @@ const params = {
   showHelpers: false,
 };
 /* ----------------------------- clipping plane ----------------------------- */
-function createClippingPlane(bXMin, bXMax, bYMin, bYMax) {
-  let plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+function createClippingPlane(bXMin=0, bXMax=0, bYMin=0, bYMax=0) {
+  const plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0));
   plane1.translate(new THREE.Vector3(bXMax, 0, 0));
-  let plane2 = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+  const plane2 = new THREE.Plane(new THREE.Vector3(-1, 0, 0));
   plane2.translate(new THREE.Vector3(bXMin, 0, 0));
-  let plane3 = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+  const plane3 = new THREE.Plane(new THREE.Vector3(0, -1, 0));
   plane3.translate(new THREE.Vector3(0, bYMin, 0));
-  let plane4 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const plane4 = new THREE.Plane(new THREE.Vector3(0, 1, 0));
   plane4.translate(new THREE.Vector3(0, bYMax, 0));
-  let plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
-  let clipPlanes = [plane1, plane2, plane3, plane4, plane5];
+  const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
+  const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
+  
+  // const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
+  //         console.log(Phelper);
+  //         scene.add(Phelper);
+  //         const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
+        
+  //         scene.add(Phelper2);
+  //         const Phelper3 = new THREE.PlaneHelper(clipPlanes[2], 80, 0x000ff0);
+        
+  //         scene.add(Phelper3)
+  //         const Phelper4 = new THREE.PlaneHelper(clipPlanes[3], 80, 0xff0ff0);
+        
+  //         scene.add(Phelper4)
+          
+ 
   return clipPlanes;
 }
 
@@ -75,12 +91,21 @@ function onMouseDown(event) {
     -(event.clientY / window.innerHeight) * 2 + 1
   );
   raycaster.setFromCamera(mouse3D, camera);
+  
+  const data=scene.children.filter((intersect) => {
+    if(intersect.name!="Saltbox_Cabinet"){
+      return intersect
+    }
+      
+  })
+  intersects = raycaster.intersectObjects(data);
 
-  intersects = raycaster.intersectObjects(scene.children);
-  console.log("intersecting the scene", intersects);
-  if (intersects[0]) {
+  if (intersects.length>0) {
     object = intersects[0].object;
-    bbox = new THREE.Box3().setFromObject(intersects[0].object);
+    
+    console.log("checking the intersect",intersects[0].object)
+    bbox = new THREE.Box3().setFromObject(object);
+    // console.log("checking the bbox",bbox)
     // Double__Door
     while (
       !(object instanceof THREE.Scene) &&
@@ -90,19 +115,80 @@ function onMouseDown(event) {
       !object.name.includes("Exterior")
     ) {
       object = object.parent;
+      
     }
     if (object.userData.draggable) {
+
+
+      startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
+      endpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, -100);
+
+      raycster2.set(
+        startpoint,
+        direction.subVectors(endpoint, startpoint).normalize()
+      );
+      wallIntersect = raycster2.intersectObjects(
+        scene.children
+      );
+      // console.log("looking for the changes",wallIntersect)
+      const val = wallIntersect
+      .filter((data) => {
+        if (data.object.name.includes("front")) {
+       
+          return data;
+        } else {
+          return;
+        }
+      })
+      .map((value) => {
+        if (value && intersects[0]) {
+          //value.object.material.clippingPlanes = []
+          console.log("object name is ", value.object.name)
+          value.object.material.clippingPlanes = createClippingPlane(
+            bbox.min.x,
+            bbox.max.x,
+            bbox.min.y,
+            bbox.max.y
+          );
+          // console.log(createClippingPlane( bbox.min.x,
+          //   bbox.max.x,
+          //   bbox.min.y,
+          //   bbox.max.y))
+            console.log("clipping plane",  value.object.material.clippingPlanes)
+          value.object.material.clipIntersection = true;
+          value.object.material.needsUpdate = true
+          
+        } else return;
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       cameraControls.enabled = false;
       xPosition = object.position.x;
       yPosition = object.position.y;
       mouseX = object.position.x - intersects[0].point.x;
       mouseY = object.position.y - intersects[0].point.y;
+      // console.log("mouseX",object.position.x,"intersect point",intersects[0].point.x)
+      // console.log("mouseY",object.position.y,"intersect point",intersects[0].point.y)
       draggable = object;
     } else {
       draggable = new THREE.Object3D();
     }
   } else {
-    console.log("not getting the value");
+    // console.log("not getting the value");
     draggable = new THREE.Object3D();
   }
 }
@@ -116,57 +202,41 @@ function onMouseDrag(event) {
   //   -(event.clientY / window.innerHeight) * 2 + 1
   // );
   if (draggable.userData.draggable) {
-    bbox2 = new THREE.Box3().setFromObject(intersects[0].object);
-    startpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, bbox.max.z);
-    endpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
+    // bbox2 = new THREE.Box3().setFromObject(intersects[0].object);
+    // startpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, bbox.max.z);
+    // endpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
     // console.log("starting pint", startpoint, "ending point", endpoint);
-    raycaster.set(
+    startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
+    endpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, -100);
+    raycster2.set(
       startpoint,
       direction.subVectors(endpoint, startpoint).normalize()
     );
     // raycaster.far = far.subVectors(mainpoint.position, startpoint).length();
-    wallIntersect = raycaster.intersectObjects(
+    wallIntersect = raycster2.intersectObjects(
       scene.children
     );
+  
    
-    const val = wallIntersect
-      .filter((data) => {
-        if (data.object.name.includes("front")) {
-        
-          return data;
-        } else {
-          return;
-        }
-      })
-      .map((value) => {
-        if (value && intersects[0]) {
-          value.object.material.clippingPlanes = createClippingPlane(
-            bbox.min.x,
-            bbox.max.x,
-            bbox.min.y,
-            bbox.max.y
-          );
-          value.object.material.clipIntersection = true;
-        } else return;
-      });
   }
 
   // raycaster.setFromCamera(mousemove, camera);
 
   if (draggable.userData.draggable && wallIntersect.length > 0) {
-    console.log("before",draggable.position.x)
+    // console.log("beforeX",draggable.position.x,"wall point",wallIntersect[0].point.x)
+    // console.log("beforeY",draggable.position.y)
    
     if (intersects.length > 1) {
       intersects[1].object.material.depthTest = true;
-     
       const selectedObject = intersects[0].object;
       addSelectedObject(selectedObject);
       outlinePass.selectedObjects = selectedObjects;
     }
     
     draggable.position.x = wallIntersect[0].point.x -mouseX
-    draggable.position.y = wallIntersect[0].point.y - mouseY;
-    console.log("after",draggable.position.x)
+    // draggable.position.y = wallIntersect[0].point.y -mouseY;
+    // console.log("afterX",draggable.position.x)
+    // console.log("aftery",draggable.position.y)
     draggable.updateMatrixWorld();
   //   //     }
    }
@@ -192,15 +262,19 @@ function onMouseUp(event) {
   const val = wallIntersect
     .filter((data) => {
       if (data.object.name.includes("front")) {
+        
         return data;
       } else {
         return;
       }
     })
     .map((value) => {
+      console.log(value,"on mouseup")
       value.object.material.clippingPlanes = null;
       value.object.material.clipIntersection = false;
+
     });
+    
 }
 function addSelectedObject(object) {
   selectedObjects = [];
@@ -313,13 +387,17 @@ function init() {
   });
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
     window.Door = object.children[0].children[0];
-    console.log("door", object);
+    
     object.traverse((child) => {
+      console.log(child)
       if (child.isMesh && child.name.includes("ramp")) {
         child.visible = false;
       }
+      if ( child.name.includes("Standard_Door")) {
+        child.visible = true;
+      }
       if (child.isMesh && child.name.includes("DoorWood")) {
-        console.log("door child", child);
+       
         child.material = new THREE.MeshPhongMaterial();
         child.bumpMap = textureWall;
         child.castShadow = true;
@@ -332,6 +410,7 @@ function init() {
         child.userData.draggable = true;
         child.userData.name = "door";
         child.material.needsUpdate = true;
+        child.visible = false;
         // child.material.bumpMap.needsUpdate = true;
       }
       if (child.name.includes("Awning")) {
@@ -417,15 +496,7 @@ function init() {
   });
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
-  // const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
-  // console.log(Phelper);
-  // scene.add(Phelper);
-  // const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
-
-  // scene.add(Phelper2);
-  // const Phelper3 = new THREE.PlaneHelper(clipPlanes[2], 80, 0x000ff0);
-
-  // scene.add(Phelper3);
+ 
   /* ------------------------------ loading home ------------------------------ */
 }
 /* ----------------------- add the texture dynamically ---------------------- */
@@ -498,7 +569,7 @@ function addVent(child) {
   child.userData.draggable = true;
   child.userData.name = "vent";
   child.userData.limit = false;
-  console.log(child.parent);
+ 
 }
 function addDoor(child) {
   child.material.bumpMap = textureWall;
