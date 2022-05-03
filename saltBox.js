@@ -41,17 +41,19 @@ let camera,
   obj,
   saltbox,
   vent,
+  bbox3,
   door,
-  collision=false
+  collision = false;
 
 /* -------------------------------- constants ------------------------------- */
+const canvas = document.querySelector("canvas.webgl");
 const raycaster = new THREE.Raycaster();
 const raycster2 = new THREE.Raycaster();
 const raycaster0 = new THREE.Raycaster();
 const raycaster3 = new THREE.Raycaster();
 const raycaster4 = new THREE.Raycaster();
 const raycaster5 = new THREE.Raycaster();
-const models=[]
+const models = [];
 var far = new THREE.Vector3();
 const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
@@ -97,14 +99,27 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   //         const Phelper4 = new THREE.PlaneHelper(clipPlanes[3], 80, 0xff0ff0);
 
   //         scene.add(Phelper4)
-  
 
   return clipPlanes;
 }
-
+document.getElementById("floorplan").addEventListener('click',createFloorPlan)
+function createFloorPlan(){
+  
+  const fbxLoader = new FBXLoader();
+  fbxLoader.load("Model/model-3.fbx", (object) => {
+    object.traverse((child)=>{
+      console.log(child)
+    })
+    bbox3 = new THREE.Box3().setFromObject(object);
+     var helpers = new THREE.BoundingBoxHelper(object, 0xff0000);
+     scene.add(helpers)
+     console.log(bbox3)
+    });
+  boxModel = new THREE.Box3().setFromObject(object);
+}
 /* -------------------- events to trigger the raycasting -------------------- */
+canvas.addEventListener("mousedown", onMouseDown);
 
-document.addEventListener("mousedown", onMouseDown);
 function onMouseDown(event) {
   event.preventDefault();
   mousedown = true;
@@ -195,7 +210,7 @@ function onMouseDown(event) {
     draggable = new THREE.Object3D();
   }
 }
-document.addEventListener("mousemove", onMouseDrag);
+canvas.addEventListener("mousemove", onMouseDrag);
 
 function onMouseDrag(event) {
   if (!mousedown) {
@@ -259,21 +274,21 @@ function onMouseDrag(event) {
     // );
   }
   // raycaster.setFromCamera(mousemove, camera);
-  var firstObject = vent
+  var firstObject = vent;
 
-  var secondObject = door
-  
- const  firstBB = new THREE.Box3().setFromObject(firstObject);
-  
+  var secondObject = door;
+
+  const firstBB = new THREE.Box3().setFromObject(firstObject);
+
   const secondBB = new THREE.Box3().setFromObject(secondObject);
-  
-   collision = firstBB.isIntersectionBox(secondBB);
-  console.log("collided",collision)
+
+  collision = firstBB.intersectsBox(secondBB);
 
   if (
     draggable.userData.draggable &&
     wallIntersect1.length > 0 &&
-    wallIntersect2.length > 0 && !collision
+    wallIntersect2.length > 0 &&
+    !collision
   ) {
     // console.log("beforeX",draggable.position.x,"wall point",wallIntersect[0].point.x)
     // console.log("beforeY",draggable.position.y)
@@ -287,9 +302,8 @@ function onMouseDrag(event) {
 
     draggable.position.x = intersectPoint[0].point.x + mouseX;
 
-    draggable.position.y =  intersectPoint[0].point.y +mouseY;
-    // console.log("afterX",draggable.position.x)
-    // console.log("aftery",draggable.position.y)
+    draggable.position.y = intersectPoint[0].point.y + mouseY;
+
     draggable.updateMatrixWorld();
     //   //     }
   }
@@ -302,10 +316,14 @@ function onMouseDrag(event) {
     }
   }
 }
-document.addEventListener("mouseup", onMouseUp);
-function onMouseUp(event) {
-  if (wallIntersect1.length < 1 || wallIntersect2.length < 1 || collision) {
+canvas.addEventListener("mouseup", onMouseUp);
 
+
+function onMouseUp(event) {
+  // document.body.appendChild(renderer.domElement);
+console.log("clicked the button ")
+console.log(document.body.children[10])
+  if (wallIntersect1.length < 1 || wallIntersect2.length < 1 || collision) {
     draggable.position.x = xPosition;
     draggable.position.y = yPosition;
     intersects[1].object.material.depthTest = true;
@@ -353,6 +371,8 @@ function init() {
   camera.position.set(0, 0, 100);
   /* --------------------------------- render --------------------------------- */
   renderer = new THREE.WebGL1Renderer({
+    canvas: canvas,
+  alpha: true,
     antialias: true,
     logarithmicDepthBuffer: true,
   });
@@ -361,7 +381,7 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.localClippingEnabled = true;
-  document.body.appendChild(renderer.domElement);
+  // document.body.appendChild(renderer.domElement);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
   dirLight.position.set(90, 30, 0);
@@ -423,8 +443,8 @@ function init() {
   ventTexture = new THREE.TextureLoader().load("Model/Venttexture.jpg");
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/vent.fbx", (object) => {
-    vent=object
-    models.push(object)
+    vent = object;
+    models.push(object);
     // window.vent = object.children[0].children[0];
     object.position.set(13, 34.8, 28.5);
     // object.position.set(13, 49.8, 14);
@@ -440,8 +460,8 @@ function init() {
     object.userData.draggable = true;
   });
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
-    door=object
-    models.push(object)
+    door = object;
+    models.push(object);
     window.Door = object.children[0].children[0];
 
     object.traverse((child) => {
@@ -478,7 +498,7 @@ function init() {
     scene.add(object);
   });
   fbxLoader.load("Model/model-3.fbx", function (object) {
-    saltbox=object
+    saltbox = object;
     window.model = object;
     // (draggable.children[0].material.clippingPlanes = clipPlanes),
     // console.log(draggable)
@@ -618,7 +638,6 @@ function addVent(child) {
   child.material.needsUpdate = true;
   child.material.map.needsUpdate = true;
   child.scale.set(0.2, 0.2, 0.2);
-
   child.rotation.y = Math.PI;
   child.material.color = new THREE.Color(0xffffff);
   child.userData.draggable = true;

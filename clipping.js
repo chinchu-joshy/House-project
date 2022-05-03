@@ -8,7 +8,7 @@ import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
 
 
-let scene, camera, renderer, cube, composer;
+let scene, camera, renderer, cube, composer,geom,v1,v2,v3;
 
 init();
 animate();
@@ -27,13 +27,13 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  const points = [];
-  points.push(new THREE.Vector3(-10, 0, 0));
-  points.push(new THREE.Vector3(0, 10, 0));
-  points.push(new THREE.Vector3(10, 0, 0));
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  // const points = [];
+  // points.push(new THREE.Vector3(-10, 0, 0));
+  // points.push(new THREE.Vector3(0, 10, 0));
+  // points.push(new THREE.Vector3(10, 0, 0));
+  // const geometry = new THREE.BufferGeometry().setFromPoints(points);
   const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-  const line = new THREE.Line(geometry, material);
+  // const line = new THREE.Line(geometry, material);
   // scene.add(line)
   const light = new THREE.AmbientLight(0xffff0f, 0.4);
   scene.add(light);
@@ -111,9 +111,9 @@ console.log(object)
     );
     mesh.position.set(0, 0, bbox.max.z - 2);
 
-    scene.add(mesh);
-    scene.add(helper);
-    scene.add(object);
+    // scene.add(mesh);
+    // scene.add(helper);
+    // scene.add(object);
   });
 
   // var geometry_Y = new THREE.BoxBufferGeometry( 1.5, 1.5, 0.99 );
@@ -159,6 +159,22 @@ console.log(object)
   // scene.add(mesh);
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
+
+
+  const point = [];
+  point.push( new THREE.Vector3( - 10, 0, 0 ) );
+  point.push( new THREE.Vector3( -10, 10, 0 ) );
+  point.push( new THREE.Vector3( 1, 10, 0 ) );
+  point.push( new THREE.Vector3( 1, 0, 0 ) );
+  point.push( new THREE.Vector3( - 10, 0, 0 ) );
+  
+   geom = new THREE.BufferGeometry().setFromPoints( point );
+
+  const lines = new THREE.Line( geom, material );
+  scene.add( lines );
+ 
+
+
 }
 
 function animate() {
