@@ -87,39 +87,79 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
   const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
 
-  // const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
+  //         const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
   //         console.log(Phelper);
   //         scene.add(Phelper);
   //         const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
-
   //         scene.add(Phelper2);
   //         const Phelper3 = new THREE.PlaneHelper(clipPlanes[2], 80, 0x000ff0);
-
   //         scene.add(Phelper3)
   //         const Phelper4 = new THREE.PlaneHelper(clipPlanes[3], 80, 0xff0ff0);
-
   //         scene.add(Phelper4)
 
   return clipPlanes;
 }
-document.getElementById("floorplan").addEventListener('click',createFloorPlan)
-function createFloorPlan(){
-  
+document.getElementById("floorplan").addEventListener("click", createFloorPlan);
+
+function createFloorPlan(modelName, position, feet) {
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/model-3.fbx", (object) => {
-    object.traverse((child)=>{
-      console.log(child)
-    })
-    bbox3 = new THREE.Box3().setFromObject(object);
-     var helpers = new THREE.BoundingBoxHelper(object, 0xff0000);
-     scene.add(helpers)
-     console.log(bbox3)
+    // camera.lookAt(0, 100, 0);
+    object.traverse((child) => {
+      if (child.name.includes("Grid")) {
+        let value = 5.79;
+        let valueV = 5.79;
+        child.scale.set(0.19, 0.19, 0.19);
+        child.position.set(0, -15, 0);
+        bbox3 = new THREE.Box3().setFromObject(child);
+        console.log(bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
+        const points = [];
+        const pointsVertical = [];
+        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
+        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
+        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
+        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
+        for (var i = 1; i < 10; i++) {
+          console.log(i);
+          points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z-value));
+          points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z-value));
+          points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z-value*2));
+          points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z-value*2));
+          // points.push(new THREE.Vector3(bbox3.max.x-value, bbox3.max.y, bbox3.max.z));
+          // points.push(new THREE.Vector3(bbox3.max.x-value, bbox3.max.y, bbox3.min.z));
+          // points.push(new THREE.Vector3(bbox3.max.x-value*2, bbox3.max.y, bbox3.max.z));
+          // points.push(new THREE.Vector3(bbox3.max.x-value*2, bbox3.max.y, bbox3.max.z));
+          value += 5.79;
+          
+        }
+
+        for (var i = 1; i < 10; i++) {
+          console.log(i);
+         
+          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV, bbox3.max.y, bbox3.max.z));
+          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV, bbox3.max.y, bbox3.min.z));
+          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV*2, bbox3.max.y, bbox3.min.z));
+          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV*2, bbox3.max.y, bbox3.max.z));
+          valueV += 5.79;
+          
+        }
+        const geometry2 = new THREE.BufferGeometry().setFromPoints(pointsVertical);
+        const material2 = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const line2 = new THREE.Line(geometry2, material2);
+        scene.add(line2);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
+      }
+      
     });
+    console.log("looking the cordinate",bbox3)
+  });
   boxModel = new THREE.Box3().setFromObject(object);
 }
 /* -------------------- events to trigger the raycasting -------------------- */
 canvas.addEventListener("mousedown", onMouseDown);
-
 function onMouseDown(event) {
   event.preventDefault();
   mousedown = true;
@@ -318,11 +358,10 @@ function onMouseDrag(event) {
 }
 canvas.addEventListener("mouseup", onMouseUp);
 
-
 function onMouseUp(event) {
   // document.body.appendChild(renderer.domElement);
-console.log("clicked the button ")
-console.log(document.body.children[10])
+  console.log("clicked the button ");
+  console.log(document.body.children[10]);
   if (wallIntersect1.length < 1 || wallIntersect2.length < 1 || collision) {
     draggable.position.x = xPosition;
     draggable.position.y = yPosition;
@@ -372,7 +411,7 @@ function init() {
   /* --------------------------------- render --------------------------------- */
   renderer = new THREE.WebGL1Renderer({
     canvas: canvas,
-  alpha: true,
+    alpha: true,
     antialias: true,
     logarithmicDepthBuffer: true,
   });
@@ -463,7 +502,6 @@ function init() {
     door = object;
     models.push(object);
     window.Door = object.children[0].children[0];
-
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("ramp")) {
         child.visible = false;
