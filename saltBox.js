@@ -41,7 +41,6 @@ let camera,
   obj,
   saltbox,
   vent,
-  bbox3,
   door,
   collision = false;
 
@@ -59,6 +58,8 @@ const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
 var draggable = new THREE.Object3D();
 var direction = new THREE.Vector3();
+let bbox3 = new THREE.Vector3();
+let bboxBack = new THREE.Vector3();
 let object = [];
 let wallIntersect = [];
 let wallIntersect1 = [];
@@ -66,7 +67,6 @@ let wallIntersect2 = [];
 let wallIntersect3 = [];
 let wallIntersect4 = [];
 let mousedown = false;
-let x = 0;
 let mouseX;
 let mouseY;
 const params = {
@@ -86,9 +86,7 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   plane4.translate(new THREE.Vector3(0, bYMax, 0));
   const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
   const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
-
   //         const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
-  //         console.log(Phelper);
   //         scene.add(Phelper);
   //         const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
   //         scene.add(Phelper2);
@@ -100,50 +98,49 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   return clipPlanes;
 }
 document.getElementById("floorplan").addEventListener("click", createFloorPlan);
-
 function createFloorPlan(modelName, position, feet) {
   const fbxLoader = new FBXLoader();
   fbxLoader.load("Model/model-3.fbx", (object) => {
     // camera.lookAt(0, 100, 0);
     object.traverse((child) => {
-      if (child.name.includes("Grid")) {
-        let value = 5.79;
+      if (child.name.includes("frontGrid")) {
+       
+        const pointsVertical = [];
+      
         let valueV = 5.79;
         child.scale.set(0.19, 0.19, 0.19);
         child.position.set(0, -15, 0);
+        // var helper = new THREE.BoundingBoxHelper(child, 0xff0000);
+        // scene.add(helper)
         bbox3 = new THREE.Box3().setFromObject(child);
-        console.log(bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
-        const points = [];
-        const pointsVertical = [];
-        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
-        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
-        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
-        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
+        createFrontPlan(child)
+        
         for (var i = 1; i < 10; i++) {
-          console.log(i);
-          points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z-value));
-          points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z-value));
-          points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z-value*2));
-          points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z-value*2));
-          // points.push(new THREE.Vector3(bbox3.max.x-value, bbox3.max.y, bbox3.max.z));
-          // points.push(new THREE.Vector3(bbox3.max.x-value, bbox3.max.y, bbox3.min.z));
-          // points.push(new THREE.Vector3(bbox3.max.x-value*2, bbox3.max.y, bbox3.max.z));
-          // points.push(new THREE.Vector3(bbox3.max.x-value*2, bbox3.max.y, bbox3.max.z));
-          value += 5.79;
-          
-        }
-
-        for (var i = 1; i < 10; i++) {
-          console.log(i);
-         
-          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV, bbox3.max.y, bbox3.max.z));
-          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV, bbox3.max.y, bbox3.min.z));
-          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV*2, bbox3.max.y, bbox3.min.z));
-          pointsVertical.push(new THREE.Vector3(bbox3.max.x-valueV*2, bbox3.max.y, bbox3.max.z));
+          pointsVertical.push(
+            new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.max.z)
+          );
+          pointsVertical.push(
+            new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.min.z)
+          );
+          pointsVertical.push(
+            new THREE.Vector3(
+              bbox3.max.x - valueV * 2,
+              bbox3.max.y,
+              bbox3.min.z
+            )
+          );
+          pointsVertical.push(
+            new THREE.Vector3(
+              bbox3.max.x - valueV * 2,
+              bbox3.max.y,
+              bbox3.max.z
+            )
+          );
           valueV += 5.79;
-          
         }
-        const geometry2 = new THREE.BufferGeometry().setFromPoints(pointsVertical);
+        const geometry2 = new THREE.BufferGeometry().setFromPoints(
+          pointsVertical
+        );
         const material2 = new THREE.LineBasicMaterial({ color: 0x000000 });
         const line2 = new THREE.Line(geometry2, material2);
         scene.add(line2);
@@ -152,9 +149,113 @@ function createFloorPlan(modelName, position, feet) {
         const line = new THREE.Line(geometry, material);
         scene.add(line);
       }
-      
+      if (child.name.includes("backGrid")) {
+        bboxBack = new THREE.Box3().setFromObject(child);
+        console.log(bboxBack);
+      }
+
+      // const points = [];
+      // const pointsVertical = [];
+
+      // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
+      // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
+      // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
+      // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
+
+      // for (var i = 1; i < 10; i++)
+      // {
+      //   points.push(
+      //     new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value)
+      //   );
+      //   points.push(
+      //     new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value)
+      //   );
+      //   points.push(
+      //     new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value * 2)
+      //   );
+      //   points.push(
+      //     new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value * 2)
+      //   );
+      //   value += 5.79;
+      // }
+      // for (var i = 1; i < 10; i++)
+      // {
+
+      //   pointsVertical.push(
+      //     new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.max.z)
+      //   );
+      //   pointsVertical.push(
+      //     new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.min.z)
+      //   );
+      //   pointsVertical.push(
+      //     new THREE.Vector3(
+      //       bbox3.max.x - valueV * 2,
+      //       bbox3.max.y,
+      //       bbox3.min.z
+      //     )
+      //   );
+      //   pointsVertical.push(
+      //     new THREE.Vector3(
+      //       bbox3.max.x - valueV * 2,
+      //       bbox3.max.y,
+      //       bbox3.max.z
+      //     )
+      //   );
+      //   valueV += 5.79;
+      // }
+      // const geometry2 = new THREE.BufferGeometry().setFromPoints(
+
+      //   pointsVertical
+
+      //   );
+      // const material2 = new THREE.LineBasicMaterial({ color: 0x000000 });
+      // const line2 = new THREE.Line(geometry2, material2);
+      // scene.add(line2);
+      // const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      // const material = new THREE.LineBasicMaterial({ color: 0x000000 });
+      // const line = new THREE.Line(geometry, material);
+      // scene.add(line);
     });
-    console.log("looking the cordinate",bbox3)
+function createFrontPlan(child){
+  let value = 5.79;
+  console.log(bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
+        const points = [];
+        
+        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
+        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
+        points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
+        points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
+        console.log(
+          "for adding the floor plan checking the coordinates",
+          bbox3.max.x,
+          bbox3.max.y,
+          bbox3.max.z - value
+        );
+        console.log(
+          "max value of the y value checking",
+          bbox3.min.x,
+          bbox3.max.y,
+          bbox3.max.z - value
+        );
+        for (var i = 1; i < 10; i++) {
+          points.push(
+            new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value)
+          );
+          points.push(
+            new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value)
+          );
+          points.push(
+            new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value * 2)
+          );
+          points.push(
+            new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value * 2)
+          );
+          value += 5.79;
+        }
+  
+}
+   
+    console.log("looking the cordinate back", bboxBack);
   });
   boxModel = new THREE.Box3().setFromObject(object);
 }
@@ -168,7 +269,6 @@ function onMouseDown(event) {
     -(event.clientY / window.innerHeight) * 2 + 1
   );
   raycaster.setFromCamera(mouse3D, camera);
-
   const data = scene.children.filter((intersect) => {
     if (intersect.name != "Saltbox_Cabinet") {
       return intersect;
@@ -176,7 +276,6 @@ function onMouseDown(event) {
   });
 
   intersects = raycaster.intersectObjects(scene.children);
-
   if (intersects.length > 0) {
     object = intersects[0].object;
 
@@ -203,12 +302,10 @@ function onMouseDown(event) {
       // raycaster.setFromCamera(mousemove, camera);
       // wallIntersect = raycaster0.intersectObjects(scene.children);
       // console.log("looking for the changes",wallIntersect)
-
       const val = intersects
         .filter((data) => {
           if (data.object.name.includes("front")) {
             console.log(data.object.name);
-
             return data;
           } else {
             return;
@@ -233,7 +330,6 @@ function onMouseDown(event) {
             value.object.material.needsUpdate = true;
           } else return;
         });
-
       cameraControls.enabled = false;
       xPosition = object.position.x;
       yPosition = object.position.y;
@@ -262,27 +358,24 @@ function onMouseDrag(event) {
   );
   if (draggable.userData.draggable) {
     bbox2 = new THREE.Box3().setFromObject(draggable);
-    // startpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, bbox2.min.z);
-    // endpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
-    // console.log("starting pint", startpoint, "ending point", endpoint);
     startpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, bbox2.min.z);
     endpoint = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
     startpointLeft = new THREE.Vector3(bbox2.min.x, bbox2.max.y, bbox2.max.z);
     endpointLeft = new THREE.Vector3(bbox2.min.x, bbox2.max.y, -100);
+
     startpointBottomLeft = new THREE.Vector3(
       bbox2.min.x,
       bbox2.min.y,
       bbox2.min.z
     );
+
     endpointBottomLeft = new THREE.Vector3(bbox2.min.x, bbox2.min.y, -100);
     startpointBottomRight = new THREE.Vector3(
       bbox2.max.x,
       bbox2.max.y,
       bbox2.min.z
     );
-
     endpointBottomRight = new THREE.Vector3(bbox2.max.x, bbox2.max.y, -100);
-
     raycaster.setFromCamera(mousemove, camera);
     intersectPoint = raycaster.intersectObjects(scene.children);
     raycster2.set(
