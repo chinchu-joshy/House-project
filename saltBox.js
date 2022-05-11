@@ -42,7 +42,9 @@ let camera,
   saltbox,
   vent,
   door,
-  collision = false;
+  collision = false,
+  frontChildren,
+  backChildren;
 
 /* -------------------------------- constants ------------------------------- */
 const canvas = document.querySelector("canvas.webgl");
@@ -104,7 +106,7 @@ function createFloorPlan(modelName, position, feet) {
     // camera.lookAt(0, 100, 0);
     object.traverse((child) => {
       if (child.name.includes("frontGrid")) {
-       
+        frontChildren=child
         const pointsVertical = [];
       
         let valueV = 5.79;
@@ -113,8 +115,7 @@ function createFloorPlan(modelName, position, feet) {
         // var helper = new THREE.BoundingBoxHelper(child, 0xff0000);
         // scene.add(helper)
         bbox3 = new THREE.Box3().setFromObject(child);
-        createFrontPlan(child)
-        
+      
         for (var i = 1; i < 10; i++) {
           pointsVertical.push(
             new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.max.z)
@@ -143,80 +144,18 @@ function createFloorPlan(modelName, position, feet) {
         );
         const material2 = new THREE.LineBasicMaterial({ color: 0x000000 });
         const line2 = new THREE.Line(geometry2, material2);
-        scene.add(line2);
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: 0x000000 });
-        const line = new THREE.Line(geometry, material);
-        scene.add(line);
+        // scene.add(line2);
+        
       }
       if (child.name.includes("backGrid")) {
+        backChildren=child
         bboxBack = new THREE.Box3().setFromObject(child);
         console.log(bboxBack);
       }
-
-      // const points = [];
-      // const pointsVertical = [];
-
-      // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
-      // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
-      // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
-      // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
-
-      // for (var i = 1; i < 10; i++)
-      // {
-      //   points.push(
-      //     new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value)
-      //   );
-      //   points.push(
-      //     new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value)
-      //   );
-      //   points.push(
-      //     new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z - value * 2)
-      //   );
-      //   points.push(
-      //     new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value * 2)
-      //   );
-      //   value += 5.79;
-      // }
-      // for (var i = 1; i < 10; i++)
-      // {
-
-      //   pointsVertical.push(
-      //     new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.max.z)
-      //   );
-      //   pointsVertical.push(
-      //     new THREE.Vector3(bbox3.max.x - valueV, bbox3.max.y, bbox3.min.z)
-      //   );
-      //   pointsVertical.push(
-      //     new THREE.Vector3(
-      //       bbox3.max.x - valueV * 2,
-      //       bbox3.max.y,
-      //       bbox3.min.z
-      //     )
-      //   );
-      //   pointsVertical.push(
-      //     new THREE.Vector3(
-      //       bbox3.max.x - valueV * 2,
-      //       bbox3.max.y,
-      //       bbox3.max.z
-      //     )
-      //   );
-      //   valueV += 5.79;
-      // }
-      // const geometry2 = new THREE.BufferGeometry().setFromPoints(
-
-      //   pointsVertical
-
-      //   );
-      // const material2 = new THREE.LineBasicMaterial({ color: 0x000000 });
-      // const line2 = new THREE.Line(geometry2, material2);
-      // scene.add(line2);
-      // const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      // const material = new THREE.LineBasicMaterial({ color: 0x000000 });
-      // const line = new THREE.Line(geometry, material);
-      // scene.add(line);
+      
     });
 function createFrontPlan(child){
+  console.log("reached here")
   let value = 5.79;
   console.log(bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
         const points = [];
@@ -225,19 +164,21 @@ function createFrontPlan(child){
         points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
         points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.min.z));
         points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.min.z));
-        console.log(
-          "for adding the floor plan checking the coordinates",
-          bbox3.max.x,
-          bbox3.max.y,
-          bbox3.max.z - value
-        );
-        console.log(
-          "max value of the y value checking",
-          bbox3.min.x,
-          bbox3.max.y,
-          bbox3.max.z - value
-        );
-        for (var i = 1; i < 10; i++) {
+        // console.log(
+        //   "for adding the floor plan checking the coordinates",
+        //   bbox3.max.x,
+        //   bbox3.max.y,
+        //   bbox3.max.z - value
+        // );
+        // console.log(
+        //   "max value of the y value checking",
+        //   bbox3.min.x,
+        //   bbox3.max.y,
+        //   bbox3.max.z - value
+        // );
+        console.log("looking the cordinate back", bboxBack);
+        for (var i = 1; i <= 5; i++) {
+          console.log(i)
           points.push(
             new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value)
           );
@@ -252,10 +193,13 @@ function createFrontPlan(child){
           );
           value += 5.79;
         }
-  
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
 }
-   
-    console.log("looking the cordinate back", bboxBack);
+createFrontPlan(frontChildren)
+// createBackPlan(backChildren)
   });
   boxModel = new THREE.Box3().setFromObject(object);
 }
@@ -291,6 +235,7 @@ function onMouseDown(event) {
       !object.name.includes("Exterior")
     ) {
       object = object.parent;
+      
     }
     if (object.userData.draggable) {
       startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
