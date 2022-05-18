@@ -55,6 +55,8 @@ const raycaster3 = new THREE.Raycaster();
 const raycaster4 = new THREE.Raycaster();
 const raycaster5 = new THREE.Raycaster();
 const models = [];
+const doorPoints = [];
+const ventPoints = [];
 var far = new THREE.Vector3();
 const clickmouse = new THREE.Vector2();
 const movemouse = new THREE.Vector2();
@@ -64,6 +66,7 @@ let bbox3 = new THREE.Vector3();
 let bboxBack = new THREE.Vector3();
 let bboxDoor = new THREE.Vector3();
 let bboxVent = new THREE.Vector3();
+let boxModel=new THREE.Vector3()
 let object = [];
 let wallIntersect = [];
 let wallIntersect1 = [];
@@ -80,6 +83,7 @@ const params = {
 };
 /* ----------------------------- clipping plane ----------------------------- */
 function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
+
   const plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0));
   plane1.translate(new THREE.Vector3(bXMax, 0, 0));
   const plane2 = new THREE.Plane(new THREE.Vector3(-1, 0, 0));
@@ -89,7 +93,9 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   const plane4 = new THREE.Plane(new THREE.Vector3(0, 1, 0));
   plane4.translate(new THREE.Vector3(0, bYMax, 0));
   const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
+
   const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
+
   //         const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
   //         scene.add(Phelper);
   //         const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
@@ -100,60 +106,85 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   //         scene.add(Phelper4)
 
   return clipPlanes;
+
 }
+
 document.getElementById("floorplan").addEventListener("click", createFloorPlan);
+
 function createFloorPlan(modelName, position, feet) {
+
   const fbxLoader = new FBXLoader();
-
+  
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
-    object.traverse((child) => {});
-    bboxDoor = new THREE.Box3().setFromObject(object);
+   
+    object.rotation.y = Math.PI / 2;
+    object.traverse((child) => {
+      
+      if(child.name.includes('Hinges')){
+        
+        child.position.set(7, 8, 28);
+        child.rotation.y = Math.PI / 2;
+        console.log(child,"find");
+        bboxDoor = new THREE.Box3().setFromObject(child);
+        var helper = new THREE.BoundingBoxHelper(child, 0xff0000);
+        scene.add(helper);
+        
+      }
+    });
 
-    object.position.set(7, 8, 28);
-    object.scale.set(0.19, 0.19, 0.19);
+       console.log(object.position);
+       
   });
 
   fbxLoader.load("Model/vent.fbx", (object) => {
-    object.traverse((child) => {});
+
+    object.traverse((child) => {
+                                       
+
+    });
+
     bboxVent = new THREE.Box3().setFromObject(object);
-    console.log("the door bbox on vent", bboxDoor);
     object.position.set(13, 34.8, 28.5);
     object.scale.set(0.19, 0.19, 0.19);
+
   });
 
   fbxLoader.load("Model/model-3.fbx", (object) => {
+
     // object.position.set(0, -15, 0);
     // object.scale.set(0.19, 0.19, 0.19);
     // camera.lookAt(0, 100, 0);
+
     object.traverse((child) => {
       child.position.set(0, -15, 0);
       if (child.name.includes("frontGrid")) {
+
         frontChildren = child;
 
         child.scale.set(0.19, 0.19, 0.19);
-        // var helper = new THREE.BoundingBoxHelper(child, 0xff0000);
-        // scene.add(helper)
+        
         bbox3 = new THREE.Box3().setFromObject(child);
+
       }
       if (child.name.includes("backGrid")) {
+
         child.scale.set(0.19, 0.19, 0.19);
         backChildren = child;
         bboxBack = new THREE.Box3().setFromObject(child);
+
         // console.log(
         //   "size of the x axis checking",
         //   bbox3.getSize(new THREE.Vector3(0, 0, 0)).y
         // );
+
       }
     });
     function createFrontPlan(child) {
-      console.log("reached here", bboxBack);
+      console.log("reached here", bboxDoor,bboxVent);
       const pointsVertical = [];
       let valueV = 5.79;
       let value = 5.79;
-      console.log(
-        "size of the z axis",
-        bbox3.getSize(new THREE.Vector3(0, 0, 0)).z
-      );
+      console.log("size of the z axis",bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
       const points = [];
       // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
       // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
@@ -173,8 +204,17 @@ function createFloorPlan(modelName, position, feet) {
       //   bbox3.max.z - value
       // );
       // console.log("looking the cordinate back", bboxBack);
+
+      doorPoints.push(new THREE.Vector3(bboxDoor.max.x,bbox3.max.y,bboxDoor.max.z))
+      doorPoints.push(new THREE.Vector3(bboxDoor.max.x,bbox3.max.y+4,bboxDoor.max.z))
+      doorPoints.push(new THREE.Vector3(bboxDoor.min.x,bbox3.max.y,bboxDoor.max.z))
+      const geometryDoor = new THREE.BufferGeometry().setFromPoints(doorPoints);
+      const materialDoor = new THREE.LineBasicMaterial({ color: 0x000000 });
+      const lineDoor = new THREE.Line(geometryDoor, materialDoor);
+      console.log(bbox3.max.y)
+      console.log("door sign",bboxDoor)
+      scene.add(lineDoor);
       for (var i = 1; i <= 10; i++) {
-      
         points.push(
           new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z - value)
         );
@@ -188,6 +228,10 @@ function createFloorPlan(modelName, position, feet) {
             bbox3.max.z - value + 5.79
           )
         );
+       
+
+
+       
         points.push(
           new THREE.Vector3(
             bbox3.max.x,
@@ -195,9 +239,10 @@ function createFloorPlan(modelName, position, feet) {
             bbox3.max.z - value + 5.79
           )
         );
-       
         value += 5.79;
       }
+      
+      console.log(value)
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({ color: 0x000000 });
       const line = new THREE.Line(geometry, material);
@@ -247,6 +292,7 @@ function onMouseDown(event) {
     -(event.clientY / window.innerHeight) * 2 + 1
   );
   raycaster.setFromCamera(mouse3D, camera);
+
   // const data = scene.children.filter((intersect) => {
   //   if (intersect.name != "Saltbox_Cabinet") {
   //     return intersect;
@@ -258,6 +304,7 @@ function onMouseDown(event) {
     object = intersects[0].object;
 
     // console.log("checking the intersect",intersects[0].object)
+
     bbox = new THREE.Box3().setFromObject(object);
     console.log("checking the bbox", bbox);
     // Double__Door
@@ -268,7 +315,9 @@ function onMouseDown(event) {
       !object.name.includes("Double__Door") &&
       !object.name.includes("Exterior")
     ) {
+
       object = object.parent;
+
     }
     if (object.userData.draggable) {
       startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
@@ -407,6 +456,8 @@ function onMouseDrag(event) {
     if (intersects.length > 1) {
       intersects[1].object.material.depthTest = true;
       const selectedObject = intersects[0].object;
+
+
       addSelectedObject(selectedObject);
       outlinePass.selectedObjects = selectedObjects;
     }
@@ -427,6 +478,7 @@ function onMouseDrag(event) {
     }
   }
 }
+
 canvas.addEventListener("mouseup", onMouseUp);
 
 function onMouseUp(event) {
@@ -451,10 +503,12 @@ function onMouseUp(event) {
       }
     })
     .map((value) => {
+
       // console.log(value,"on mouseup before")
       value.object.material.clippingPlanes = null;
       value.object.material.clipIntersection = false;
       // console.log(value,"on mouseup")
+
     });
 }
 function addSelectedObject(object) {
@@ -555,15 +609,21 @@ function init() {
   fbxLoader.load("Model/vent.fbx", (object) => {
     vent = object;
     models.push(object);
+
     // window.vent = object.children[0].children[0];
+
     object.position.set(13, 34.8, 28.5);
+
     // object.position.set(13, 49.8, 14);
 
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("Vent")) {
+
         // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
         // composer.addPass( pass );
+
         addVent(child);
+
       }
     });
     scene.add(object);
@@ -657,12 +717,15 @@ function init() {
         });
       }
       if (child.name.includes("Grid")) {
-        console.log(child);
+      
         child.visible = false;
+
       }
     });
+
     //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
     // composer.addPass( outlinePass );
+
     object.position.set(0, -15, 0);
     camera.lookAt(object.position);
     object.userData.name = "Roofing";
@@ -670,12 +733,14 @@ function init() {
     object.userData.draggable = false;
     scene.add(object);
     mainpoint = object;
+
     // var outlineMaterial1 = new THREE.MeshBasicMaterial({
     //   color: 0xff0000,
     //   wireframe: true,
     // });
     // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
     // scene.add(outlineMesh1);
+
   });
   const axesHelper = new THREE.AxesHelper(80);
   scene.add(axesHelper);
