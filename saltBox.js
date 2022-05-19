@@ -45,7 +45,6 @@ let camera,
   collision = false,
   frontChildren,
   backChildren;
-
 /* -------------------------------- constants ------------------------------- */
 const canvas = document.querySelector("canvas.webgl");
 const raycaster = new THREE.Raycaster();
@@ -66,7 +65,7 @@ let bbox3 = new THREE.Vector3();
 let bboxBack = new THREE.Vector3();
 let bboxDoor = new THREE.Vector3();
 let bboxVent = new THREE.Vector3();
-let boxModel=new THREE.Vector3()
+let boxModel = new THREE.Vector3();
 let object = [];
 let wallIntersect = [];
 let wallIntersect1 = [];
@@ -83,7 +82,6 @@ const params = {
 };
 /* ----------------------------- clipping plane ----------------------------- */
 function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
-
   const plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0));
   plane1.translate(new THREE.Vector3(bXMax, 0, 0));
   const plane2 = new THREE.Plane(new THREE.Vector3(-1, 0, 0));
@@ -106,51 +104,35 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   //         scene.add(Phelper4)
 
   return clipPlanes;
-
 }
 
 document.getElementById("floorplan").addEventListener("click", createFloorPlan);
-
 function createFloorPlan(modelName, position, feet) {
-
   const fbxLoader = new FBXLoader();
-  
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
-   
     object.rotation.y = Math.PI / 2;
     object.traverse((child) => {
-      
-      if(child.name.includes('Hinges')){
-        
+      if (child.name.includes("Hinges")) {
         child.position.set(7, 8, 28);
         child.rotation.y = Math.PI / 2;
-        console.log(child,"find");
+        console.log(child, "find");
         bboxDoor = new THREE.Box3().setFromObject(child);
         var helper = new THREE.BoundingBoxHelper(child, 0xff0000);
         scene.add(helper);
-        
       }
     });
 
-       console.log(object.position);
-       
+    console.log(object.position);
   });
 
   fbxLoader.load("Model/vent.fbx", (object) => {
-
-    object.traverse((child) => {
-                                       
-
-    });
-
+    object.traverse((child) => {});
     bboxVent = new THREE.Box3().setFromObject(object);
     object.position.set(13, 34.8, 28.5);
     object.scale.set(0.19, 0.19, 0.19);
-
   });
 
   fbxLoader.load("Model/model-3.fbx", (object) => {
-
     // object.position.set(0, -15, 0);
     // object.scale.set(0.19, 0.19, 0.19);
     // camera.lookAt(0, 100, 0);
@@ -158,16 +140,13 @@ function createFloorPlan(modelName, position, feet) {
     object.traverse((child) => {
       child.position.set(0, -15, 0);
       if (child.name.includes("frontGrid")) {
-
         frontChildren = child;
 
         child.scale.set(0.19, 0.19, 0.19);
-        
-        bbox3 = new THREE.Box3().setFromObject(child);
 
+        bbox3 = new THREE.Box3().setFromObject(child);
       }
       if (child.name.includes("backGrid")) {
-
         child.scale.set(0.19, 0.19, 0.19);
         backChildren = child;
         bboxBack = new THREE.Box3().setFromObject(child);
@@ -176,16 +155,19 @@ function createFloorPlan(modelName, position, feet) {
         //   "size of the x axis checking",
         //   bbox3.getSize(new THREE.Vector3(0, 0, 0)).y
         // );
-
       }
     });
     function createFrontPlan(child) {
-      console.log("reached here", bboxDoor,bboxVent);
+      console.log("reached here", bboxDoor, bboxVent);
       const pointsVertical = [];
       let valueV = 5.79;
       let value = 5.79;
-      console.log("size of the z axis",bbox3.getSize(new THREE.Vector3(0, 0, 0)).z);
+      console.log(
+        "size of the z axis",
+        bbox3.getSize(new THREE.Vector3(0, 0, 0)).z
+      );
       const points = [];
+
       // points.push(new THREE.Vector3(bbox3.max.x, bbox3.max.y, bbox3.max.z));
       // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bbox3.max.z));
       // points.push(new THREE.Vector3(bbox3.min.x, bbox3.max.y, bboxBack.min.z));
@@ -205,14 +187,20 @@ function createFloorPlan(modelName, position, feet) {
       // );
       // console.log("looking the cordinate back", bboxBack);
 
-      doorPoints.push(new THREE.Vector3(bboxDoor.max.x,bbox3.max.y,bboxDoor.max.z))
-      doorPoints.push(new THREE.Vector3(bboxDoor.max.x,bbox3.max.y+4,bboxDoor.max.z))
-      doorPoints.push(new THREE.Vector3(bboxDoor.min.x,bbox3.max.y,bboxDoor.max.z))
+      doorPoints.push(
+        new THREE.Vector3(bboxDoor.max.x, bbox3.max.y, bboxDoor.max.z)
+      );
+      doorPoints.push(
+        new THREE.Vector3(bboxDoor.max.x, bbox3.max.y + 4, bboxDoor.max.z)
+      );
+      doorPoints.push(
+        new THREE.Vector3(bboxDoor.min.x, bbox3.max.y, bboxDoor.max.z)
+      );
       const geometryDoor = new THREE.BufferGeometry().setFromPoints(doorPoints);
       const materialDoor = new THREE.LineBasicMaterial({ color: 0x000000 });
       const lineDoor = new THREE.Line(geometryDoor, materialDoor);
-      console.log(bbox3.max.y)
-      console.log("door sign",bboxDoor)
+      console.log(bbox3.max.y);
+      console.log("door sign", bboxDoor);
       scene.add(lineDoor);
       for (var i = 1; i <= 10; i++) {
         points.push(
@@ -228,10 +216,6 @@ function createFloorPlan(modelName, position, feet) {
             bbox3.max.z - value + 5.79
           )
         );
-       
-
-
-       
         points.push(
           new THREE.Vector3(
             bbox3.max.x,
@@ -241,8 +225,8 @@ function createFloorPlan(modelName, position, feet) {
         );
         value += 5.79;
       }
-      
-      console.log(value)
+
+      console.log(value);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({ color: 0x000000 });
       const line = new THREE.Line(geometry, material);
@@ -257,6 +241,7 @@ function createFloorPlan(modelName, position, feet) {
         pointsVertical.push(
           new THREE.Vector3(
             bbox3.max.x - valueV + 5.79,
+
             bbox3.max.y,
             bboxBack.min.z
           )
@@ -280,7 +265,7 @@ function createFloorPlan(modelName, position, feet) {
     createFrontPlan(frontChildren);
     // createBackPlan(backChildren)
   });
-  boxModel = new THREE.Box3().setFromObject(object);
+  // boxModel = new THREE.Box3().setFromObject(object);
 }
 /* -------------------- events to trigger the raycasting -------------------- */
 canvas.addEventListener("mousedown", onMouseDown);
@@ -293,21 +278,18 @@ function onMouseDown(event) {
   );
   raycaster.setFromCamera(mouse3D, camera);
 
-  // const data = scene.children.filter((intersect) => {
-  //   if (intersect.name != "Saltbox_Cabinet") {
-  //     return intersect;
-  //   }
-  // });
-
   intersects = raycaster.intersectObjects(scene.children);
+
   if (intersects.length > 0) {
     object = intersects[0].object;
 
     // console.log("checking the intersect",intersects[0].object)
 
     bbox = new THREE.Box3().setFromObject(object);
-    console.log("checking the bbox", bbox);
+    console.log(intersects);
+
     // Double__Door
+
     while (
       !(object instanceof THREE.Scene) &&
       !object.name.includes("SaltBox") &&
@@ -315,9 +297,10 @@ function onMouseDown(event) {
       !object.name.includes("Double__Door") &&
       !object.name.includes("Exterior")
     ) {
-
+      console.log("the objects",object)
       object = object.parent;
-
+      // console.log("looking", object);
+      // console.log(object.userData);
     }
     if (object.userData.draggable) {
       startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
@@ -362,6 +345,7 @@ function onMouseDown(event) {
       yPosition = object.position.y;
       mouseX = object.position.x - intersects[0].point.x;
       mouseY = object.position.y - intersects[0].point.y;
+
       // console.log("mouseX",object.position.x,"intersect point",intersects[0].point.x,"mouseX",mouseX)
       // console.log("mouseY",object.position.y,"intersect point",intersects[0].point.y)
       draggable = object;
@@ -379,6 +363,7 @@ function onMouseDrag(event) {
   if (!mousedown) {
     return;
   }
+
   mousemove = new THREE.Vector3(
     (event.clientX / window.innerWidth) * 2 - 1,
     -(event.clientY / window.innerHeight) * 2 + 1
@@ -428,7 +413,9 @@ function onMouseDrag(event) {
     wallIntersect2 = raycaster3.intersectObjects(scene.children);
 
     wallIntersect3 = raycaster4.intersectObjects(scene.children);
-
+console.log("first",wallIntersect1.length)
+console.log("second",wallIntersect2.length)
+console.log("third",wallIntersect3.length)
     // wallIntersect4 = raycaster5.intersectObjects(
     // scene.children
     // );
@@ -452,20 +439,14 @@ function onMouseDrag(event) {
   ) {
     // console.log("beforeX",draggable.position.x,"wall point",wallIntersect[0].point.x)
     // console.log("beforeY",draggable.position.y)
-
     if (intersects.length > 1) {
       intersects[1].object.material.depthTest = true;
       const selectedObject = intersects[0].object;
-
-
       addSelectedObject(selectedObject);
       outlinePass.selectedObjects = selectedObjects;
     }
-
     draggable.position.x = intersectPoint[0].point.x + mouseX;
-
-    draggable.position.y = intersectPoint[0].point.y + mouseY;
-
+    // draggable.position.y = intersectPoint[0].point.y + mouseY;
     draggable.updateMatrixWorld();
     //   //     }
   }
@@ -483,8 +464,7 @@ canvas.addEventListener("mouseup", onMouseUp);
 
 function onMouseUp(event) {
   // document.body.appendChild(renderer.domElement);
-  console.log("clicked the button ");
-  console.log(document.body.children[10]);
+
   if (wallIntersect1.length < 1 || wallIntersect2.length < 1 || collision) {
     draggable.position.x = xPosition;
     draggable.position.y = yPosition;
@@ -503,12 +483,10 @@ function onMouseUp(event) {
       }
     })
     .map((value) => {
-
       // console.log(value,"on mouseup before")
       value.object.material.clippingPlanes = null;
       value.object.material.clipIntersection = false;
       // console.log(value,"on mouseup")
-
     });
 }
 function addSelectedObject(object) {
@@ -618,12 +596,10 @@ function init() {
 
     object.traverse((child) => {
       if (child.isMesh && child.name.includes("Vent")) {
-
         // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
         // composer.addPass( pass );
 
         addVent(child);
-
       }
     });
     scene.add(object);
@@ -632,32 +608,66 @@ function init() {
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
     door = object;
     models.push(object);
-    window.Door = object.children[0].children[0];
-    object.traverse((child) => {
-      if (child.isMesh && child.name.includes("ramp")) {
-        child.visible = false;
+
+    object.traverse((door) => {
+      window.door = object;
+      if (door.isMesh && door.name.includes("ramp")) {
+        door.visible = false;
       }
-      if (child.name.includes("Standard_Door")) {
-        child.visible = true;
+
+      if (
+        door.name.includes("Double__Door") ||
+        door.name.includes("Standard_Door") ||
+        door.name.includes("DoubleDoor_HingeFrame") ||
+        door.parent.name.includes("DoubleDoor_HingeFrame") ||
+        door.parent.name.includes("Standard_Door")
+      ) {
+        // console.log(door);
+
+        door.visible = true;
+      } else {
+        door.visible = false;
       }
-      if (child.isMesh && child.name.includes("DoorWood")) {
-        child.material = new THREE.MeshPhongMaterial();
-        child.bumpMap = textureWall;
-        child.castShadow = true;
-        child.receiveShadow = true;
-        child.material.map = textureWall;
-        child.material.bumpScale = 0.08;
-        child.material.map.wrapS = THREE.RepeatWrapping;
-        child.material.map.wrapT = THREE.RepeatWrapping;
-        child.material.color = new THREE.Color(0x382c16);
-        child.userData.draggable = true;
-        child.userData.name = "door";
-        child.material.needsUpdate = true;
-        child.visible = false;
-        // child.material.bumpMap.needsUpdate = true;
+      if (door.name.includes("DoorWood")) {
+        door.material = new THREE.MeshStandardMaterial();
+        door.material.bumpMap = textureWall;
+        //door.material.map = textureWall;
+        door.material.bumpScale = 0.4;
+        door.material.color = new THREE.Color(0x382c16);
+        door.material.bumpMap.needsUpdate = true;
+        door.material.needsUpdate = true;
+        // door.userData.draggable = false;
+        // door.userData.name = "sidewall";
+        // door.userData.limit = true;
+        // door.material = new THREE.MeshPhongMaterial();
+        // door.material.bumpMap = textureWall;
+        // door.castShadow = true;
+        // door.receiveShadow = true;
+        // door.material.map = textureWall;
+        // door.material.bumpMap.repeat.set(4, 4);
+        // door.material.bumpScale = 0.08;
+        // door.material.map.wrapS = THREE.RepeatWrapping;
+        // door.material.map.wrapT = THREE.RepeatWrapping;
+        // door.material.color = new THREE.Color(0x3f0000);
+        // door.userData.draggable = true;
+        // door.userData.name = "door";
+        // door.material.needsUpdate = true;
+        // console.log(door.material)
       }
-      if (child.name.includes("Awning")) {
-        child.visible = false;
+      if (door.name.includes("Trim_side")) {
+        door.material = new THREE.MeshPhongMaterial();
+
+        door.material.bumpMap = texture;
+        // door.material.map = texture;
+        door.material.bumpScale = 0.8;
+        door.material.bumpMap.wrapS = THREE.RepeatWrapping;
+        door.material.bumpMap.wrapT = THREE.RepeatWrapping;
+        door.material.color = new THREE.Color(0xffffff);
+
+        door.material.needsUpdate = true;
+      }
+      if (door.name.includes("Awning")) {
+        door.visible = false;
       }
     });
     object.position.set(7, 8, 28);
@@ -677,7 +687,7 @@ function init() {
         window.child = child;
       }
       if (child.isMesh && child.name.includes("Trim")) {
-        Trim(child, 0xfff0f2f5);
+        Trim(child, 0xffffff);
       }
       if (child.name.includes("Ridge_Cap")) {
         child.visible = false;
@@ -717,9 +727,7 @@ function init() {
         });
       }
       if (child.name.includes("Grid")) {
-      
         child.visible = false;
-
       }
     });
 
@@ -740,10 +748,9 @@ function init() {
     // });
     // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
     // scene.add(outlineMesh1);
-
   });
-  const axesHelper = new THREE.AxesHelper(80);
-  scene.add(axesHelper);
+  // const axesHelper = new THREE.AxesHelper(80);
+  // scene.add(axesHelper);
   /* ------------------------------ loading home ------------------------------ */
 }
 /* ----------------------- add the texture dynamically ---------------------- */
@@ -757,21 +764,21 @@ function addBottom(child, color) {
   child.material.map.wrapT = THREE.RepeatWrapping;
   child.material.color = new THREE.Color(color);
   child.userData.draggable = false;
-  child.userData.name = "sidewall";
+  child.userData.name = "bottom";
 }
 function sideWall(value, color) {
   value.material = new THREE.MeshStandardMaterial();
-  value.material.bumpScale = 0.2;
+  value.material.bumpScale = 0.3;
   value.material.color = new THREE.Color(color);
   value.material.DoubleSide = true;
   value.material.bumpMap = textureWall;
-  value.material.bumpMap.repeat.set(2, 2);
-  value.material.bumpMap.needsUpdate = true;
+  value.material.bumpMap.repeat.set(4, 4);
   value.material.bumpMap.wrapS = THREE.RepeatWrapping;
   value.material.bumpMap.wrapT = THREE.RepeatWrapping;
+  value.material.bumpMap.needsUpdate = true;
   value.material.needsUpdate = true;
   value.userData.draggable = false;
-  value.userData.name = "wall";
+  value.userData.name = "sidewall";
   value.userData.limit = true;
 
   // var helper = new THREE.BoundingBoxHelper(value, 0xff0000);
