@@ -9,8 +9,29 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button id="floorplan">generate floor plan</button>
-    <canvas class="webgl"></canvas>
+    <div class="main">
+        <button id="floorplan">generate floor plan</button>
+        <button id="wallcolor"> <input type="color" id="head" name="head"
+            value="#e66465">
+     <label for="head">Change color of wall</label></button>
+        <button id="trimcolor"> <input type="color" id="body" name="body"
+            value="#f6b73c">
+    <label for="body">Change color of trim</label></button>
+        <button id="door">Change Door</button>
+        
+        
+       
+    </div>
+    <div class="section">
+        <canvas class="webgl"></canvas>
+       
+    </div>
+    
+    
+    
+    <div class="bottom">
+        LAKESIDE
+    </div>
    <script src="js/three.js"></script>
    <script src="js/CSG.js"></script>
    <script type="text/javascript" src="dat.gui.min.js"></script>

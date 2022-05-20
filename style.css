@@ -26,5 +26,23 @@
 .navbar ul li:hover{
     color: white;
 }
+.main{
+    background-color: rgb(42, 78, 88);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+.main button{
+    color: rgb(42, 78, 88);
+    font-size: medium;
+    border-radius: 4px solid ;
+}
+
+.bottom{
+    background-color: rgb(42, 78, 88);
+    padding: 20px;
+    height: 10vh;
+}
+
 /* Awning
 ramp */

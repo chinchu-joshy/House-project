@@ -121,8 +121,10 @@ function createFloorPlan(modelName, position, feet) {
         scene.add(helper);
       }
     });
-   
+
+    console.log(object.position);
   });
+
   fbxLoader.load("Model/vent.fbx", (object) => {
     object.traverse((child) => {});
     bboxVent = new THREE.Box3().setFromObject(object);
@@ -134,18 +136,22 @@ function createFloorPlan(modelName, position, feet) {
     // object.position.set(0, -15, 0);
     // object.scale.set(0.19, 0.19, 0.19);
     // camera.lookAt(0, 100, 0);
+
     object.traverse((child) => {
       child.position.set(0, -15, 0);
       if (child.name.includes("frontGrid")) {
         frontChildren = child;
+
         child.scale.set(0.19, 0.19, 0.19);
+
         bbox3 = new THREE.Box3().setFromObject(child);
       }
       if (child.name.includes("backGrid")) {
         child.scale.set(0.19, 0.19, 0.19);
         backChildren = child;
         bboxBack = new THREE.Box3().setFromObject(child);
-        //   console.log(
+
+        // console.log(
         //   "size of the x axis checking",
         //   bbox3.getSize(new THREE.Vector3(0, 0, 0)).y
         // );
@@ -218,7 +224,9 @@ function createFloorPlan(modelName, position, feet) {
           )
         );
         value += 5.79;
-      } 
+      }
+
+      console.log(value);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({ color: 0x000000 });
       const line = new THREE.Line(geometry, material);
@@ -233,6 +241,7 @@ function createFloorPlan(modelName, position, feet) {
         pointsVertical.push(
           new THREE.Vector3(
             bbox3.max.x - valueV + 5.79,
+
             bbox3.max.y,
             bboxBack.min.z
           )
@@ -279,7 +288,7 @@ function onMouseDown(event) {
 
     bbox = new THREE.Box3().setFromObject(object);
 
-   
+    console.log(intersects);
 
     // Double__Door
 
@@ -293,7 +302,7 @@ function onMouseDown(event) {
      
       object = object.parent;
       // console.log("looking", object);
-      // console.log(object.userData);
+      console.log(object.userData);
     }
     if (object.userData.draggable) {
       startpoint = new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z);
@@ -305,34 +314,34 @@ function onMouseDown(event) {
       // raycaster.setFromCamera(mousemove, camera);
       // wallIntersect = raycaster0.intersectObjects(scene.children);
       // console.log("looking for the changes",wallIntersect)
-      const val = intersects
-        .filter((data) => {
-          if (data.object.name.includes("front")) {
-            // console.log(data.object.name);
-            return data;
-          } else {
-            return;
-          }
-        })
-        .map((value) => {
-          if (value) {
-            //value.object.material.clippingPlanes = []
-            // console.log("object name is ", value.object.name)
-            value.object.material.clippingPlanes = createClippingPlane(
-              bbox.min.x,
-              bbox.max.x,
-              bbox.min.y,
-              bbox.max.y
-            );
-            // console.log(createClippingPlane( bbox.min.x,
-            //   bbox.max.x,
-            //   bbox.min.y,
-            //   bbox.max.y))
-            // console.log("clipping plane", value.object.material.clippingPlanes);
-            value.object.material.clipIntersection = true;
-            value.object.material.needsUpdate = true;
-          } else return;
-        });
+      // const val = intersects
+      //   .filter((data) => {
+      //     if (data.object.name.includes("front")) {
+      //       // console.log(data.object.name);
+      //       return data;
+      //     } else {
+      //       return;
+      //     }
+      //   })
+      //   .map((value) => {
+      //     if (value) {
+      //       //value.object.material.clippingPlanes = []
+      //       // console.log("object name is ", value.object.name)
+      //       value.object.material.clippingPlanes = createClippingPlane(
+      //         bbox.min.x,
+      //         bbox.max.x,
+      //         bbox.min.y,
+      //         bbox.max.y
+      //       );
+      //       // console.log(createClippingPlane( bbox.min.x,
+      //       //   bbox.max.x,
+      //       //   bbox.min.y,
+      //       //   bbox.max.y))
+      //       // console.log("clipping plane", value.object.material.clippingPlanes);
+      //       value.object.material.clipIntersection = true;
+      //       value.object.material.needsUpdate = true;
+      //     } else return;
+      //   });
       cameraControls.enabled = false;
       xPosition = object.position.x;
       yPosition = object.position.y;
@@ -446,16 +455,21 @@ function onMouseDrag(event) {
     if (draggable.userData.draggable) {
       // console.log("correct",draggable)
       draggable.traverse((child)=>{
-        if(child.name.includes("red")){
-         // draggable.rotation.y = Math.PI ;
-         child.renderOrder = 1;
-         child.material.color = new THREE.Color(0xff0000);
-       child.material.depthTest = false;
-       child.visible=true
-      
-      
-        }
-       })    
+       if(child.name.includes("red")){
+        // draggable.rotation.y = Math.PI ;
+        child.renderOrder = 1;
+        child.material.color = new THREE.Color(0xff0000);
+      child.material.depthTest = false;
+      child.visible=true
+     
+      console.log(child.position)
+       }
+      })    
+      // draggable.material.color = new THREE.Color(0xff0000);
+      // draggable.material.depthTest = false;
+      // intersects[1].object.renderOrder = 1;
+      // intersects[1].object.material.color = new THREE.Color(0xff0000);
+      // intersects[1].object.material.depthTest = false;
     }
   }
 }
@@ -476,7 +490,7 @@ function onMouseUp(event) {
      child.material.depthTest = true;
      child.visible=false
     
-     
+     console.log(child.position)
       }
      })
   }
@@ -683,6 +697,7 @@ function init() {
     object.position.set(7, 8, 29);
     object.scale.set(0.19, 0.19, 0.19);
     object.rotation.y = -Math.PI /2
+    console.log(Math.PI)
     object.userData.draggable = true;
     scene.add(object);
   });
@@ -790,6 +805,7 @@ function sideWall(value, color) {
   value.userData.draggable = false;
   value.userData.name = "sidewall";
   value.userData.limit = true;
+
   // var helper = new THREE.BoundingBoxHelper(value, 0xff0000);
   // scene.add(helper)
 }
