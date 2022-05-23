@@ -91,7 +91,6 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   const plane4 = new THREE.Plane(new THREE.Vector3(0, 1, 0));
   plane4.translate(new THREE.Vector3(0, bYMax, 0));
   const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
-
   const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
 
   //         const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
@@ -104,8 +103,31 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   //         scene.add(Phelper4)
 
   return clipPlanes;
+
 }
 
+document.getElementById("testing").addEventListener("submit", testing);
+function testing(e){
+  e.preventDefault()
+console.log(e.target.value)
+console.log("hdbfh")
+}
+
+
+document.getElementById("door").addEventListener("click", changeDoor);
+function changeDoor(){
+
+}
+document.getElementById("trimcolor").addEventListener("click", changeTrimColor);
+function changeTrimColor(){
+
+}
+document.getElementById("head").addEventListener("change", changeWallColor);
+function changeWallColor(e){
+e.preventDefault()
+console.log("reached",document.getElementById("head").value)
+
+}
 document.getElementById("floorplan").addEventListener("click", createFloorPlan);
 function createFloorPlan(modelName, position, feet) {
   const fbxLoader = new FBXLoader();
@@ -121,7 +143,6 @@ function createFloorPlan(modelName, position, feet) {
         scene.add(helper);
       }
     });
-   
   });
   fbxLoader.load("Model/vent.fbx", (object) => {
     object.traverse((child) => {});
@@ -338,7 +359,6 @@ function onMouseDown(event) {
       yPosition = object.position.y;
       mouseX = object.position.x - intersects[0].point.x;
       mouseY = object.position.y - intersects[0].point.y;
-
       // console.log("mouseX",object.position.x,"intersect point",intersects[0].point.x,"mouseX",mouseX)
       // console.log("mouseY",object.position.y,"intersect point",intersects[0].point.y)
       draggable = object;
