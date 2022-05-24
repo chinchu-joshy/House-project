@@ -5,6 +5,7 @@ import { RenderPass } from "/js/RenderPass.js";
 import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
 import { SMAAPass } from "/js/SMAAPass.js";
+import {test} from "./helo.js"
 
 let camera,
   scene,
@@ -859,6 +860,7 @@ function addDoor(child) {
 
 /* --------------------------------- animate -------------------------------- */
 function animate() {
+  console.log(test)
   requestAnimationFrame(animate);
   composer.render();
 
