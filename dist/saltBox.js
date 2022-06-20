@@ -545,6 +545,8 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.localClippingEnabled = true;
+  renderer.xr.enabled=true
+ 
   // document.body.appendChild(renderer.domElement);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -578,7 +580,7 @@ function init() {
     0xfff000
   );
   scene.add(pointLightHelper2);
-  document.body.appendChild( ARButton.createButton( renderer, { optionalFeatures: [ 'light-estimation' ] } ) );
+  
   /* ---------------------------- post proccessing ---------------------------- */
   composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
@@ -599,6 +601,7 @@ function init() {
   CameraControls.install({ THREE: THREE });
   clock = new THREE.Clock();
   cameraControls = new CameraControls(camera, renderer.domElement);
+  document.body.appendChild( ARButton.createButton( renderer) );
   /* ------------------------ adding model to the scene ----------------------- */
   texture = new THREE.TextureLoader().load("Model/walnut-normal.jpg");
   textureWall = new THREE.TextureLoader().load("Model/wall-3.png");
@@ -873,14 +876,14 @@ if(checkDoorType!= doorType){
   composer.render();
 
   const delta = clock.getDelta();
-  const hasControlsUpdated = cameraControls.update(delta);
-  if (resizeRendererToDisplaySize(renderer)) {
-    const canvas = renderer.domElement;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    camera.updateProjectionMatrix();
-  }
-  renderer.xr.enabled=true
+   cameraControls.update(delta);
+  // if (resizeRendererToDisplaySize(renderer)) {
+  //   const canvas = renderer.domElement;
+  //   renderer.setSize(window.innerWidth, window.innerHeight);
+  //   camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  //   camera.updateProjectionMatrix();
+  // }
+  
 }
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
