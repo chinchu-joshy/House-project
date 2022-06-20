@@ -1,0 +1,78 @@
+*{
+    margin: 0;
+}
+.navbar{
+    display: flex;
+    justify-content: center;
+    width: 100vw;
+    align-items: center;
+    height: 10vh;
+}
+.navbar ul{
+    display: flex;
+    justify-content: space-evenly;
+    width: 100vw;
+    align-items: center;
+    list-style-type: none;
+    background-color: black;
+    height: 100%;
+    
+}
+.navbar ul li{
+    color: red;
+    cursor: pointer;
+   
+}
+.navbar ul li:hover{
+    color: white;
+}
+.main{
+    background-color: rgb(42, 78, 88);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+.main button{
+    color: rgb(42, 78, 88);
+    font-size: medium;
+    border-radius: 4px solid ;
+}
+
+.bottom{
+    background-color: rgb(42, 78, 88);
+    padding: 20px;
+    height: 10vh;
+}
+.val1{
+    background-color: rgb(24, 11, 11);
+    color: white;
+}
+.val2{
+    background-color: rgb(187, 41, 41);
+    color: white;
+}
+.val3{
+    background-color: rgb(14, 78, 62);
+    color: white;
+}
+.val4{
+    background-color: rgb(7, 39, 65);
+    color: white;
+}
+.ar{
+    background-color: rgb(13, 59, 80);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    border: 2px solid rgb(140, 169, 175);
+    color: white;
+}
+.ar:hover{
+    background-color: rgb(96, 134, 151);
+    cursor: pointer;
+}
+
+
+/* Awning
+ramp */

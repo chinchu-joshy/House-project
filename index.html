@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three.js Udemy</title>
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="main">
+      <div class="ar">
+         AR Experience
+      </div>
+        <button type="submit" id="floorplan">generate floor plan</button>
+      <button type="submit" id="testing"
+      >
+        <label >Change color of wall:</label>
+        <select onchange="selectSample(this)" name="walls" id="wall">
+          <option class="val1" value="0x382c16">Brown</option>
+          <option class="val2" value="0xA01C14">Red</option>
+          <option class="val3" value="0x0A7718">Green</option>
+          <option class="val4" value="0x003399">Blue</option>
+        </select>
+      </button>
+      <button type="submit" id="trimcolor"
+      >
+        <label>Change color of trim:</label>
+        <select  onchange="checkTrim(this)" name="trims" id="trim">
+          <option class="val1" value="0xffffff">White</option>
+          <option class="val2" value="0xA01C14">Red</option>
+          <option class="val3" value="0x0A7718">Green</option>
+          <option class="val4" value="0x003399">Blue</option>
+        </select>
+      </button>
+      <button type="submit" id="door"
+      >
+        <label >Change Door:</label>
+        <select  onchange="checkDoor(this)" name="doors" id="door">
+          <option class="val3" value="Standard_Door">Standard Door</option>
+          <option class="val4" value="Stall_door">Stall door</option>
+          <option class="val3" value="Diamond_Door">Diamond Door</option>
+          <option class="val4" value="Double_Panel_Door">Double Panel Door</option>
+          <option class="val3" value="Rounded__Door">Rounded Door</option>
+          <option class="val4" value="Arch_Top_Door">Arch Top Door</option>
+        </select>
+      </button>
+     
+      
+    </div>
+
+    <div class="section">
+      <canvas class="webgl"> </canvas>
+    </div>
+  
+    <script src="js/three.js"></script>
+    <script src="js/CSG.js"></script>
+    <script type="text/javascript" src="dat.gui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.122.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script type="module" src="saltBox.js"></script>
+    <!-- <script type="module" src="floorPlan.js"></script> -->
+    <script type="module">
+      import { selectSample,checkTrim,checkDoor } from "./helo.js";
+      window.selectSample = selectSample;
+      window.checkTrim = checkTrim;
+      window.checkDoor = checkDoor;
+     
+    </script>
+    <script src="js/threebsp.js"></script>
+  </body>
+</html>
+
+
