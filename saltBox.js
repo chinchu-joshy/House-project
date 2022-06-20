@@ -5,8 +5,10 @@ import { RenderPass } from "/js/RenderPass.js";
 import { GlitchPass } from "/js/GlitchPass.js";
 import { OutlinePass } from "/js/OutlinePass.js";
 import { SMAAPass } from "/js/SMAAPass.js";
-
+import { test ,trimColor,doorType} from "./helo.js";
+import { ARButton } from '/js/arbutton.js';
 let camera,
+
   scene,
   renderer,
   light,
@@ -53,6 +55,7 @@ const raycaster0 = new THREE.Raycaster();
 const raycaster3 = new THREE.Raycaster();
 const raycaster4 = new THREE.Raycaster();
 const raycaster5 = new THREE.Raycaster();
+const fbxLoader = new FBXLoader();
 const models = [];
 const doorPoints = [];
 const ventPoints = [];
@@ -75,12 +78,17 @@ let wallIntersect4 = [];
 let mousedown = false;
 let mouseX;
 let mouseY;
+let checkColor = 0x382c16;
+let checkTrimColor=0xffffff
+let checkDoorType="Standard_Door"
 const params = {
   clipIntersection: true,
   planeConstant: 0,
   showHelpers: false,
 };
+
 /* ----------------------------- clipping plane ----------------------------- */
+
 function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   const plane1 = new THREE.Plane(new THREE.Vector3(1, 0, 0));
   plane1.translate(new THREE.Vector3(bXMax, 0, 0));
@@ -103,31 +111,22 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   //         scene.add(Phelper4)
 
   return clipPlanes;
-
 }
 
 document.getElementById("testing").addEventListener("submit", testing);
-function testing(e){
-  e.preventDefault()
-console.log(e.target.value)
-console.log("hdbfh")
+function testing(e) {
+  e.preventDefault();
+  
 }
-
 
 document.getElementById("door").addEventListener("click", changeDoor);
-function changeDoor(){
-
-}
+function changeDoor() {}
 document.getElementById("trimcolor").addEventListener("click", changeTrimColor);
-function changeTrimColor(){
-
-}
-document.getElementById("head").addEventListener("change", changeWallColor);
-function changeWallColor(e){
-e.preventDefault()
-console.log("reached",document.getElementById("head").value)
-
-}
+function changeTrimColor() {}
+// document.getElementById("wallcolor").addEventListener("change", changeWallColor);
+// function changeWallColor(e) {
+//   console.log("reached", document.getElementById("head").value);
+// }
 document.getElementById("floorplan").addEventListener("click", createFloorPlan);
 function createFloorPlan(modelName, position, feet) {
   const fbxLoader = new FBXLoader();
@@ -239,7 +238,7 @@ function createFloorPlan(modelName, position, feet) {
           )
         );
         value += 5.79;
-      } 
+      }
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({ color: 0x000000 });
       const line = new THREE.Line(geometry, material);
@@ -291,7 +290,6 @@ function onMouseDown(event) {
   raycaster.setFromCamera(mouse3D, camera);
 
   intersects = raycaster.intersectObjects(scene.children);
-  
 
   if (intersects.length > 0) {
     object = intersects[0].object;
@@ -299,8 +297,6 @@ function onMouseDown(event) {
     // console.log("checking the intersect",intersects[0].object)
 
     bbox = new THREE.Box3().setFromObject(object);
-
-   
 
     // Double__Door
 
@@ -311,7 +307,6 @@ function onMouseDown(event) {
       !object.name.includes("Double__Door") &&
       !object.name.includes("Exterior")
     ) {
-     
       object = object.parent;
       // console.log("looking", object);
       // console.log(object.userData);
@@ -465,17 +460,15 @@ function onMouseDrag(event) {
   else {
     if (draggable.userData.draggable) {
       // console.log("correct",draggable)
-      draggable.traverse((child)=>{
-        if(child.name.includes("red")){
-         // draggable.rotation.y = Math.PI ;
-         child.renderOrder = 1;
-         child.material.color = new THREE.Color(0xff0000);
-       child.material.depthTest = false;
-       child.visible=true
-      
-      
+      draggable.traverse((child) => {
+        if (child.name.includes("red")) {
+          // draggable.rotation.y = Math.PI ;
+          child.renderOrder = 1;
+          child.material.color = new THREE.Color(0xff0000);
+          child.material.depthTest = false;
+          child.visible = true;
         }
-       })    
+      });
     }
   }
 }
@@ -488,17 +481,15 @@ function onMouseUp(event) {
   if (wallIntersect1.length < 1 || wallIntersect2.length < 1 || collision) {
     draggable.position.x = xPosition;
     draggable.position.y = yPosition;
-    draggable.traverse((child)=>{
-      if(child.name.includes("red")){
-       // draggable.rotation.y = Math.PI ;
-       child.renderOrder = 1;
-     
-     child.material.depthTest = true;
-     child.visible=false
-    
-     
+    draggable.traverse((child) => {
+      if (child.name.includes("red")) {
+        // draggable.rotation.y = Math.PI ;
+        child.renderOrder = 1;
+
+        child.material.depthTest = true;
+        child.visible = false;
       }
-     })
+    });
   }
   mousedown = false;
   cameraControls.enabled = true;
@@ -529,6 +520,7 @@ function addSelectedObject(object) {
 init();
 animate();
 function init() {
+ 
   /* ---------------------------------- scene --------------------------------- */
   const BACKGROUND_COLOR = 0xf1f1f1;
   scene = new THREE.Scene();
@@ -586,7 +578,7 @@ function init() {
     0xfff000
   );
   scene.add(pointLightHelper2);
-
+  document.body.appendChild( ARButton.createButton( renderer, { optionalFeatures: [ 'light-estimation' ] } ) );
   /* ---------------------------- post proccessing ---------------------------- */
   composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
@@ -613,7 +605,7 @@ function init() {
   textureRoof = new THREE.TextureLoader().load("Model/RusticBlack.jpeg");
   textureBase = new THREE.TextureLoader().load("Model/base.jpg");
   ventTexture = new THREE.TextureLoader().load("Model/Venttexture.jpg");
-  const fbxLoader = new FBXLoader();
+
   fbxLoader.load("Model/vent.fbx", (object) => {
     vent = object;
     models.push(object);
@@ -628,13 +620,97 @@ function init() {
       if (child.isMesh && child.name.includes("Vent")) {
         // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
         // composer.addPass( pass );
-
         addVent(child);
       }
     });
     scene.add(object);
     object.userData.draggable = true;
   });
+  
+ 
+
+  createHouse();
+  createDoor()
+  // const axesHelper = new THREE.AxesHelper(80);
+  // scene.add(axesHelper);
+  /* ------------------------------ loading home ------------------------------ */
+}
+function createHouse() {
+  fbxLoader.load("Model/model-3.fbx", function (object) {
+    saltbox = object;
+    window.model = object;
+    // (draggable.children[0].material.clippingPlanes = clipPlanes),
+    // console.log(draggable)
+    object.traverse(function (child) {
+      if (child.isMesh && child.name.includes("Shed_SaltBox")) {
+        addBottom(child, 0xf0f0f0);
+        window.child = child;
+      }
+      if (child.isMesh && child.name.includes("Trim")) {
+        Trim(child, trimColor);
+      }
+      if (child.name.includes("Ridge_Cap")) {
+        child.visible = false;
+      }
+      if (child.name.includes("_40_year_Metal_Roofing")) {
+        child.visible = false;
+      }
+      if (child.name.includes("EXTERIOR_OPTIONS")) {
+        child.visible = false;
+      }
+      if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
+        child.traverse((value) => {
+          if (
+            value.isMesh &&
+            (value.name == "left_side" ||
+              value.name == "back_side" ||
+              value.name == "right_side" ||
+              value.name == "front_side")
+          ) {
+            sideWall(value);
+          }
+          if (
+            value.name == "left_outline" ||
+            value.name == "right_outline" ||
+            value.name == "front_outline" ||
+            value.name == "back__outline"
+          ) {
+            value.visible = false;
+          }
+        });
+      }
+      if (child.name.includes("Roofing")) {
+        child.traverse((value) => {
+          if (value.isMesh && value.name?.includes("Archite")) {
+            Roof(value);
+          }
+        });
+      }
+      if (child.name.includes("Grid")) {
+        child.visible = false;
+      }
+    });
+
+    //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+    // composer.addPass( outlinePass );
+
+    object.position.set(0, -15, 0);
+    camera.lookAt(object.position);
+    object.userData.name = "Roofing";
+    object.scale.set(0.19, 0.19, 0.19);
+    object.userData.draggable = false;
+    scene.add(object);
+    mainpoint = object;
+
+    // var outlineMaterial1 = new THREE.MeshBasicMaterial({
+    //   color: 0xff0000,
+    //   wireframe: true,
+    // });
+    // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
+    // scene.add(outlineMesh1);
+  });
+}
+function createDoor(){
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
     door = object;
     models.push(object);
@@ -702,86 +778,10 @@ function init() {
     });
     object.position.set(7, 8, 29);
     object.scale.set(0.19, 0.19, 0.19);
-    object.rotation.y = -Math.PI /2
+    object.rotation.y = -Math.PI / 2;
     object.userData.draggable = true;
     scene.add(object);
   });
-  fbxLoader.load("Model/model-3.fbx", function (object) {
-    saltbox = object;
-    window.model = object;
-    // (draggable.children[0].material.clippingPlanes = clipPlanes),
-    // console.log(draggable)
-    object.traverse(function (child) {
-      if (child.isMesh && child.name.includes("Shed_SaltBox")) {
-        addBottom(child, 0xf0f0f0);
-        window.child = child;
-      }
-      if (child.isMesh && child.name.includes("Trim")) {
-        Trim(child, 0xffffff);
-      }
-      if (child.name.includes("Ridge_Cap")) {
-        child.visible = false;
-      }
-      if (child.name.includes("_40_year_Metal_Roofing")) {
-        child.visible = false;
-      }
-      if (child.name.includes("EXTERIOR_OPTIONS")) {
-        child.visible = false;
-      }
-      if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
-        child.traverse((value) => {
-          if (
-            value.isMesh &&
-            (value.name == "left_side" ||
-              value.name == "back_side" ||
-              value.name == "right_side" ||
-              value.name == "front_side")
-          ) {
-            sideWall(value, 0x382c16);
-          }
-          if (
-            value.name == "left_outline" ||
-            value.name == "right_outline" ||
-            value.name == "front_outline" ||
-            value.name == "back__outline"
-          ) {
-            value.visible = false;
-          }
-        });
-      }
-      if (child.name.includes("Roofing")) {
-        child.traverse((value) => {
-          if (value.isMesh && value.name?.includes("Archite")) {
-            Roof(value);
-          }
-        });
-      }
-      if (child.name.includes("Grid")) {
-        child.visible = false;
-      }
-    });
-
-    //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-    // composer.addPass( outlinePass );
-
-    object.position.set(0, -15, 0);
-    camera.lookAt(object.position);
-    object.userData.name = "Roofing";
-    object.scale.set(0.19, 0.19, 0.19);
-    object.userData.draggable = false;
-    scene.add(object);
-    mainpoint = object;
-
-    // var outlineMaterial1 = new THREE.MeshBasicMaterial({
-    //   color: 0xff0000,
-    //   wireframe: true,
-    // });
-    // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
-    // scene.add(outlineMesh1);
-  });
-  // const axesHelper = new THREE.AxesHelper(80);
-  // scene.add(axesHelper);
-  /* ------------------------------ loading home ------------------------------ */
 }
 /* ----------------------- add the texture dynamically ---------------------- */
 function addBottom(child, color) {
@@ -796,10 +796,10 @@ function addBottom(child, color) {
   child.userData.draggable = false;
   child.userData.name = "bottom";
 }
-function sideWall(value, color) {
+function sideWall(value) {
   value.material = new THREE.MeshStandardMaterial();
   value.material.bumpScale = 0.3;
-  value.material.color = new THREE.Color(color);
+  value.material.color = new THREE.Color(parseInt(test));
   value.material.DoubleSide = true;
   value.material.bumpMap = textureWall;
   value.material.bumpMap.repeat.set(4, 4);
@@ -821,7 +821,7 @@ function Trim(child, color) {
   child.material.bumpScale = 0.08;
   child.material.bumpMap.wrapS = THREE.RepeatWrapping;
   child.material.bumpMap.wrapT = THREE.RepeatWrapping;
-  child.material.color = new THREE.Color(color);
+  child.material.color = new THREE.Color(parseInt(trimColor));
   child.userData.draggable = false;
   child.userData.name = "trim";
   child.userData.limit = true;
@@ -852,6 +852,7 @@ function addVent(child) {
   child.userData.name = "vent";
   child.userData.limit = false;
 }
+
 function addDoor(child) {
   child.material.bumpMap = textureWall;
 }
@@ -859,6 +860,15 @@ function addDoor(child) {
 
 /* --------------------------------- animate -------------------------------- */
 function animate() {
+  if (checkColor != test || checkTrimColor !=trimColor ) {
+    console.log("testing value", test);
+    createHouse();
+  }
+if(checkDoorType!= doorType){
+ 
+}
+  checkColor = test;
+  checkTrimColor=trimColor
   requestAnimationFrame(animate);
   composer.render();
 
@@ -870,6 +880,7 @@ function animate() {
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
   }
+  renderer.xr.enabled=true
 }
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;

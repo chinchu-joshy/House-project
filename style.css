@@ -43,6 +43,36 @@
     padding: 20px;
     height: 10vh;
 }
+.val1{
+    background-color: rgb(24, 11, 11);
+    color: white;
+}
+.val2{
+    background-color: rgb(187, 41, 41);
+    color: white;
+}
+.val3{
+    background-color: rgb(14, 78, 62);
+    color: white;
+}
+.val4{
+    background-color: rgb(7, 39, 65);
+    color: white;
+}
+.ar{
+    background-color: rgb(13, 59, 80);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    border: 2px solid rgb(140, 169, 175);
+    color: white;
+}
+.ar:hover{
+    background-color: rgb(96, 134, 151);
+    cursor: pointer;
+}
+
 
 /* Awning
 ramp */
