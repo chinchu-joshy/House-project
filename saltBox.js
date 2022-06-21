@@ -1,12 +1,12 @@
-import { FBXLoader } from "/js/fbxloader.js";
+import { FBXLoader } from "./js/fbxloader.js";
 import CameraControls from "./js/camera-controls.module.js";
-import { EffectComposer } from "/js/EffectComposer.js";
-import { RenderPass } from "/js/RenderPass.js";
-import { GlitchPass } from "/js/GlitchPass.js";
-import { OutlinePass } from "/js/OutlinePass.js";
-import { SMAAPass } from "/js/SMAAPass.js";
+import { EffectComposer } from "./js/EffectComposer.js";
+import { RenderPass } from "./js/RenderPass.js";
+import { GlitchPass } from "./js/GlitchPass.js";
+import { OutlinePass } from "./js/OutlinePass.js";
+import { SMAAPass } from "./js/SMAAPass.js";
 import { test ,trimColor,doorType} from "./helo.js";
-import { ARButton } from '/js/arbutton.js';
+import { ARButton } from './js/arbutton.js';
 let camera,
 
   scene,
