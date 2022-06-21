@@ -39,17 +39,11 @@ let camera,
   door,
   collision = false,
   frontChildren,
+  controller,
   backChildren;
 /* -------------------------------- constants ------------------------------- */
 const canvas = document.querySelector("canvas.webgl");
-
-
 /* ----------------------------- clipping plane ----------------------------- */
-
-
-
-
-
 init();
 animate();
 function init() {
