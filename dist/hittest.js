@@ -83,21 +83,65 @@ function init() {
     textureRoof = new THREE.TextureLoader().load("Model/RusticBlack.jpeg");
     textureBase = new THREE.TextureLoader().load("Model/base.jpg");
     ventTexture = new THREE.TextureLoader().load("Model/Venttexture.jpg");
-   
-
-    
-  
-  
     fbxLoader.load("Model/model-3.fbx", function (object) {
       window.model = object;
       // (draggable.children[0].material.clippingPlanes = clipPlanes),
       // console.log(draggable)
-   
+      object.traverse(function (child) {
+        if (child.isMesh && child.name.includes("Shed_SaltBox")) {
+          addBottom(child, 0xf0f0f0);
+          window.child = child;
+        }
+        if (child.isMesh && child.name.includes("Trim")) {
+          Trim(child, trimColor);
+        }
+        if (child.name.includes("Ridge_Cap")) {
+          child.visible = false;
+        }
+        if (child.name.includes("_40_year_Metal_Roofing")) {
+          child.visible = false;
+        }
+        if (child.name.includes("EXTERIOR_OPTIONS")) {
+          child.visible = false;
+        }
+        if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
+          child.traverse((value) => {
+            if (
+              value.isMesh &&
+              (
+                value.name == "left_side" ||
+                value.name == "back_side" ||
+                value.name == "right_side" ||
+                value.name == "front_side")
+            ) {
+              sideWall(value);
+            }
+            if (
+              value.name == "left_outline" ||
+              value.name == "right_outline" ||
+              value.name == "front_outline" ||
+              value.name == "back__outline"
+            ) {
+              value.visible = false;
+            }
+          });
+        }
+        if (child.name.includes("Roofing")) {
+          child.traverse((value) => {
+            if (value.isMesh && value.name?.includes("Archite")) {
+              Roof(value);
+            }
+          });
+        }
+        if (child.name.includes("Grid")) {
+          child.visible = false;
+        }
+      });
 
       //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
       // composer.addPass( outlinePass );
 
-      object.position.set(5, 0, 0);
+      object.position.set(5, 0, -1);
       camera.lookAt(object.position);
       object.userData.name = "Roofing";
       object.scale.set(0.19, 0.19, 0.19);
@@ -187,16 +231,13 @@ function init() {
   controller = renderer.xr.getController(0);
   controller.addEventListener("select", onSelect);
   scene.add(controller);
-
   //
 
   window.addEventListener("resize", onWindowResize);
 }
-
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
