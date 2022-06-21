@@ -756,23 +756,7 @@ function createDoor() {
         door.material.color = new THREE.Color(0x382c16);
         door.material.bumpMap.needsUpdate = true;
         door.material.needsUpdate = true;
-        // door.userData.draggable = false;
-        // door.userData.name = "sidewall";
-        // door.userData.limit = true;
-        // door.material = new THREE.MeshPhongMaterial();
-        // door.material.bumpMap = textureWall;
-        // door.castShadow = true;
-        // door.receiveShadow = true;
-        // door.material.map = textureWall;
-        // door.material.bumpMap.repeat.set(4, 4);
-        // door.material.bumpScale = 0.08;
-        // door.material.map.wrapS = THREE.RepeatWrapping;
-        // door.material.map.wrapT = THREE.RepeatWrapping;
-        // door.material.color = new THREE.Color(0x3f0000);
-        // door.userData.draggable = true;
-        // door.userData.name = "door";
-        // door.material.needsUpdate = true;
-        // console.log(door.material)
+       
       }
       if (door.name.includes("Trim_side")) {
         door.material = new THREE.MeshPhongMaterial();
