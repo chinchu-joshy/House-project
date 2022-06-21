@@ -141,7 +141,7 @@ function init() {
       //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
       // composer.addPass( outlinePass );
 
-      object.position.set(5, 0, -10);
+      object.position.set(5, 0, -1);
       camera.lookAt(object.position);
       object.userData.name = "Roofing";
       object.scale.set(0.19, 0.19, 0.19);
