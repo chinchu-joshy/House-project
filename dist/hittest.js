@@ -139,7 +139,7 @@ function init() {
 
       object.position.set(5, 0, 0);
       camera.lookAt(object.position);
-      object.scale.set(0.19, 0.19, 0.19);
+      object.scale.set(0.03, 0.03, 0.03);
 
       scene.add(object);
 
