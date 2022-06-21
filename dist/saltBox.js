@@ -100,7 +100,6 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
   plane4.translate(new THREE.Vector3(0, bYMax, 0));
   const plane5 = new THREE.Plane(new THREE.Vector3(0, 0, -1));
   const clipPlanes = [plane1, plane2, plane3, plane4, plane5];
-
   //         const Phelper = new THREE.PlaneHelper(clipPlanes[0], 80, 0xfff000);
   //         scene.add(Phelper);
   //         const Phelper2 = new THREE.PlaneHelper(clipPlanes[1], 80, 0xff00f0);
