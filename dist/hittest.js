@@ -77,7 +77,6 @@ function init() {
     // mesh.position.set( 0, 0, - 0.3 ).applyMatrix4( controller.matrixWorld );
     // mesh.quaternion.setFromRotationMatrix( controller.matrixWorld );
     // scene.add( mesh );
-
     texture = new THREE.TextureLoader().load("Model/walnut-normal.jpg");
     textureWall = new THREE.TextureLoader().load("Model/wall-3.png");
     textureRoof = new THREE.TextureLoader().load("Model/RusticBlack.jpeg");
@@ -143,11 +142,10 @@ function init() {
 
       object.position.set(5, 0, -1);
       camera.lookAt(object.position);
-      object.userData.name = "Roofing";
       object.scale.set(0.19, 0.19, 0.19);
       object.userData.draggable = false;
       scene.add(object);
-      mainpoint = object;
+    
 
       // var outlineMaterial1 = new THREE.MeshBasicMaterial({
       //   color: 0xff0000,
@@ -229,8 +227,8 @@ function init() {
   }
 
   controller = renderer.xr.getController(0);
-  
-  controller.addEventListener("load", onSelect);
+  console.log(renderer.xr)
+  controller.addEventListener("select", onSelect);
   scene.add(controller);
   //
 
