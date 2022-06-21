@@ -45,6 +45,7 @@ let camera,
   door,
   collision = false,
   frontChildren,
+  controller,
   backChildren;
 /* -------------------------------- constants ------------------------------- */
 const canvas = document.querySelector("canvas.webgl");
@@ -596,20 +597,35 @@ function init() {
   composer.addPass(pass);
   /* ----------------------------- camera controls ---------------------------- */
   CameraControls.install({ THREE: THREE });
+
+  // function onSelect() {
+
+	// 	if ( reticle.visible ) {
+
+	// 		var material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
+	// 		var mesh = new THREE.Mesh( boxgeometry, material );
+	// 		mesh.position.setFromMatrixPosition( reticle.matrix );
+	// 		//mesh.scale.y = Math.random() * 2 + 1;
+	// 		mesh.scale.set( 0.25, 0.25, 0.25 );
+	// 		scene.add( mesh );
+	// 	}
+	// }
+
   clock = new THREE.Clock();
   cameraControls = new CameraControls(camera, renderer.domElement);
   document.body.appendChild(ARButton.createButton(renderer));
+  controller = renderer.xr.getController( 0 );
+	// controller.addEventListener( 'select', onSelect );
+	scene.add( controller );
   /* ------------------------ adding model to the scene ----------------------- */
   texture = new THREE.TextureLoader().load("Model/walnut-normal.jpg");
   textureWall = new THREE.TextureLoader().load("Model/wall-3.png");
   textureRoof = new THREE.TextureLoader().load("Model/RusticBlack.jpeg");
   textureBase = new THREE.TextureLoader().load("Model/base.jpg");
   ventTexture = new THREE.TextureLoader().load("Model/Venttexture.jpg");
-
   fbxLoader.load("Model/vent.fbx", (object) => {
     vent = object;
     models.push(object);
-
     // window.vent = object.children[0].children[0];
 
     object.position.set(13, 34.8, 28.5);
