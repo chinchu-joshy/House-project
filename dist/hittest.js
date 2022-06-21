@@ -85,59 +85,57 @@ function init() {
     fbxLoader.load("Model/model-3.fbx", function (object) {
       // (draggable.children[0].material.clippingPlanes = clipPlanes),
       // console.log(draggable)
-      //   object.traverse(function (child) {
-      //     if (child.isMesh && child.name.includes("Shed_SaltBox")) {
-      //       addBottom(child, 0xf0f0f0);
-      //       window.child = child;
-      //     }
-      //     if (child.isMesh && child.name.includes("Trim")) {
-      //       Trim(child, trimColor);
-      //     }
-      //     if (child.name.includes("Ridge_Cap")) {
-      //       child.visible = false;
-      //     }
-      //     if (child.name.includes("_40_year_Metal_Roofing")) {
-      //       child.visible = false;
-      //     }
-      //     if (child.name.includes("EXTERIOR_OPTIONS")) {
-      //       child.visible = false;
-      //     }
-      //     if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
-      //       child.traverse((value) => {
-      //         if (
-      //           value.isMesh &&
-      //           (
-      //             value.name == "left_side" ||
-      //             value.name == "back_side" ||
-      //             value.name == "right_side" ||
-      //             value.name == "front_side")
-      //         ) {
-      //           sideWall(value);
-      //         }
-      //         if (
-      //           value.name == "left_outline" ||
-      //           value.name == "right_outline" ||
-      //           value.name == "front_outline" ||
-      //           value.name == "back__outline"
-      //         ) {
-      //           value.visible = false;
-      //         }
-      //       });
-      //     }
-      //     if (child.name.includes("Roofing")) {
-      //       child.traverse((value) => {
-      //         if (value.isMesh && value.name?.includes("Archite")) {
-      //           Roof(value);
-      //         }
-      //       });
-      //     }
-      //     if (child.name.includes("Grid")) {
-      //       child.visible = false;
-      //     }
-      //   });
+        object.traverse(function (child) {
+          if (child.isMesh && child.name.includes("Shed_SaltBox")) {
+            addBottom(child, 0xf0f0f0);
+            
+          }
+          if (child.isMesh && child.name.includes("Trim")) {
+            Trim(child);
+          }
+          if (child.name.includes("Ridge_Cap")) {
+            child.visible = false;
+          }
+          if (child.name.includes("_40_year_Metal_Roofing")) {
+            child.visible = false;
+          }
+          if (child.name.includes("EXTERIOR_OPTIONS")) {
+            child.visible = false;
+          }
+          if (child.name.includes("Shed_SaltBox_10x10_Sidewall")) {
+            child.traverse((value) => {
+              if (
+                value.isMesh &&
+                (
+                  value.name == "left_side" ||
+                  value.name == "back_side" ||
+                  value.name == "right_side" ||
+                  value.name == "front_side")
+              ) {
+                sideWall(value);
+              }
+              if (
+                value.name == "left_outline" ||
+                value.name == "right_outline" ||
+                value.name == "front_outline" ||
+                value.name == "back__outline"
+              ) {
+                value.visible = false;
+              }
+            });
+          }
+          if (child.name.includes("Roofing")) {
+            child.traverse((value) => {
+              if (value.isMesh && value.name?.includes("Archite")) {
+                Roof(value);
+              }
+            });
+          }
+          if (child.name.includes("Grid")) {
+            child.visible = false;
+          }
+        });
 
-      //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-      // composer.addPass( outlinePass );
 
       object.position.set(5, 0, 0);
       camera.lookAt(object.position);
@@ -145,12 +143,7 @@ function init() {
 
       scene.add(object);
 
-      // var outlineMaterial1 = new THREE.MeshBasicMaterial({
-      //   color: 0xff0000,
-      //   wireframe: true,
-      // });
-      // var outlineMesh1 = new THREE.Mesh(globalGeomtry, outlineMaterial1);
-      // scene.add(outlineMesh1);
+     
     });
   }
 
@@ -184,7 +177,7 @@ function init() {
     // var helper = new THREE.BoundingBoxHelper(value, 0xff0000);
     // scene.add(helper)
   }
-  function Trim(child, color) {
+  function Trim(child) {
     child.material = new THREE.MeshPhongMaterial();
     child.castShadow = true;
     child.receiveShadow = true;
