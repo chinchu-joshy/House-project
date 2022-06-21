@@ -1,14 +1,13 @@
-import { FBXLoader } from "/js/fbxloader.js";
+import { FBXLoader } from "./js/fbxloader.js";
 import CameraControls from "./js/camera-controls.module.js";
-import { EffectComposer } from "/js/EffectComposer.js";
-import { RenderPass } from "/js/RenderPass.js";
-import { GlitchPass } from "/js/GlitchPass.js";
-import { OutlinePass } from "/js/OutlinePass.js";
-import { SMAAPass } from "/js/SMAAPass.js";
-import { test ,trimColor,doorType} from "./helo.js";
-import { ARButton } from '/js/arbutton.js';
+import { EffectComposer } from "./js/EffectComposer.js";
+import { RenderPass } from "./js/RenderPass.js";
+import { GlitchPass } from "./js/GlitchPass.js";
+import { OutlinePass } from "./js/OutlinePass.js";
+import { SMAAPass } from "./js/SMAAPass.js";
+import { test, trimColor, doorType } from "./helo.js";
+import { ARButton } from "./js/arbutton.js";
 let camera,
-
   scene,
   renderer,
   light,
@@ -79,8 +78,8 @@ let mousedown = false;
 let mouseX;
 let mouseY;
 let checkColor = 0x382c16;
-let checkTrimColor=0xffffff
-let checkDoorType="Standard_Door"
+let checkTrimColor = 0xffffff;
+let checkDoorType = "Standard_Door";
 const params = {
   clipIntersection: true,
   planeConstant: 0,
@@ -116,7 +115,6 @@ function createClippingPlane(bXMin = 0, bXMax = 0, bYMin = 0, bYMax = 0) {
 document.getElementById("testing").addEventListener("submit", testing);
 function testing(e) {
   e.preventDefault();
-  
 }
 
 document.getElementById("door").addEventListener("click", changeDoor);
@@ -520,7 +518,6 @@ function addSelectedObject(object) {
 init();
 animate();
 function init() {
- 
   /* ---------------------------------- scene --------------------------------- */
   const BACKGROUND_COLOR = 0xf1f1f1;
   scene = new THREE.Scene();
@@ -545,8 +542,8 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.localClippingEnabled = true;
-  renderer.xr.enabled=true
- 
+  renderer.xr.enabled = true;
+
   // document.body.appendChild(renderer.domElement);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -580,7 +577,7 @@ function init() {
     0xfff000
   );
   scene.add(pointLightHelper2);
-  
+
   /* ---------------------------- post proccessing ---------------------------- */
   composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
@@ -601,7 +598,7 @@ function init() {
   CameraControls.install({ THREE: THREE });
   clock = new THREE.Clock();
   cameraControls = new CameraControls(camera, renderer.domElement);
-  document.body.appendChild( ARButton.createButton( renderer) );
+  document.body.appendChild(ARButton.createButton(renderer));
   /* ------------------------ adding model to the scene ----------------------- */
   texture = new THREE.TextureLoader().load("Model/walnut-normal.jpg");
   textureWall = new THREE.TextureLoader().load("Model/wall-3.png");
@@ -629,11 +626,9 @@ function init() {
     scene.add(object);
     object.userData.draggable = true;
   });
-  
- 
 
   createHouse();
-  createDoor()
+  createDoor();
   // const axesHelper = new THREE.AxesHelper(80);
   // scene.add(axesHelper);
   /* ------------------------------ loading home ------------------------------ */
@@ -713,7 +708,7 @@ function createHouse() {
     // scene.add(outlineMesh1);
   });
 }
-function createDoor(){
+function createDoor() {
   fbxLoader.load("Model/doubleDoor.fbx", (object) => {
     door = object;
     models.push(object);
@@ -863,27 +858,25 @@ function addDoor(child) {
 
 /* --------------------------------- animate -------------------------------- */
 function animate() {
-  if (checkColor != test || checkTrimColor !=trimColor ) {
+  if (checkColor != test || checkTrimColor != trimColor) {
     console.log("testing value", test);
     createHouse();
   }
-if(checkDoorType!= doorType){
- 
-}
+  if (checkDoorType != doorType) {
+  }
   checkColor = test;
-  checkTrimColor=trimColor
+  checkTrimColor = trimColor;
   requestAnimationFrame(animate);
   composer.render();
 
   const delta = clock.getDelta();
-   cameraControls.update(delta);
+  cameraControls.update(delta);
   // if (resizeRendererToDisplaySize(renderer)) {
   //   const canvas = renderer.domElement;
   //   renderer.setSize(window.innerWidth, window.innerHeight);
   //   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   //   camera.updateProjectionMatrix();
   // }
-  
 }
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
