@@ -140,7 +140,7 @@ function init() {
       //  const outlinePass = new THREE.OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
       // composer.addPass( outlinePass );
 
-      object.position.set(5, 0, -1);
+      object.position.set(5, 0, 0);
       camera.lookAt(object.position);
       object.scale.set(0.19, 0.19, 0.19);
       object.userData.draggable = false;
@@ -227,7 +227,7 @@ function init() {
   }
 
   controller = renderer.xr.getController(0);
-  console.log(renderer.xr)
+
   controller.addEventListener("select", onSelect);
   scene.add(controller);
   //
