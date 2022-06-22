@@ -137,10 +137,10 @@ function init() {
         });
 
 
-      object.position.set(5, -1, 0);
+      object.position.set(0, -1, 0);
       console.log("here")
       camera.lookAt(object.position);
-      object.scale.set(0.01, 0.01, 0.01);
+      object.scale.set(0.005, 0.005, 0.005);
 
       scene.add(object);
 
