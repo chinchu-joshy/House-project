@@ -146,6 +146,79 @@ function init() {
 
      
     });
+    createVent()
+    createDoor()
+  }
+
+function createVent(){
+  fbxLoader.load("Model/vent.fbx", (object) => {
+    vent = object;
+    models.push(object);
+    // window.vent = object.children[0].children[0];
+    object.position.set(13, 43.8, 28.5);
+    // object.position.set(13, 49.8, 14);
+    object.traverse((child) => {
+      if (child.isMesh && child.name.includes("Vent")) {
+        // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
+        // composer.addPass( pass );
+        addVent(child);
+      }
+    });
+    scene.add(object);
+   
+  });
+}
+
+  function createDoor() {
+    fbxLoader.load("Model/doubleDoor.fbx", (object) => {
+      door = object;
+      models.push(object);
+      object.traverse((door) => {
+        window.door = object;
+        if (door.isMesh && door.name.includes("ramp")) {
+          door.visible = false;
+        }
+        if (
+          door.name.includes("Double__Door") ||
+          door.name.includes("Standard_Door") ||
+          door.name.includes("DoubleDoor_HingeFrame") ||
+          door.parent.name.includes("DoubleDoor_HingeFrame") ||
+          door.parent.name.includes("Standard_Door")
+        ) {
+          // console.log(door);
+          door.visible = true;
+        } else {
+          door.visible = false;
+        }
+        if (door.name.includes("DoorWood")) {
+          door.material = new THREE.MeshStandardMaterial();
+          door.material.bumpMap = textureWall;
+          //door.material.map = textureWall;
+          door.material.bumpScale = 0.4;
+          door.material.color = new THREE.Color(0x382c16);
+          door.material.bumpMap.needsUpdate = true;
+          door.material.needsUpdate = true;
+        }
+        if (door.name.includes("Trim_side")) {
+          door.material = new THREE.MeshPhongMaterial();
+          door.material.bumpMap = texture;
+          //door.material.map = texture;
+          door.material.bumpScale = 0.8;
+          door.material.bumpMap.wrapS = THREE.RepeatWrapping;
+          door.material.bumpMap.wrapT = THREE.RepeatWrapping;
+          door.material.color = new THREE.Color(0xffffff);
+          door.material.needsUpdate = true;
+        }
+        if (door.name.includes("Awning")) {
+          door.visible = false;
+        }
+      });
+      object.position.set(7, 17, 29);
+      object.scale.set(0.19, 0.19, 0.19);
+      object.rotation.y = -Math.PI / 2;
+      object.userData.draggable = true;
+      scene.add(object);
+    });
   }
 
   /* ----------------------- add the texture dynamically ---------------------- */
