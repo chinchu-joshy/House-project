@@ -599,23 +599,23 @@ function init() {
 
   // function onSelect() {
 
-	// 	if ( reticle.visible ) {
+  // 	if ( reticle.visible ) {
 
-	// 		var material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
-	// 		var mesh = new THREE.Mesh( boxgeometry, material );
-	// 		mesh.position.setFromMatrixPosition( reticle.matrix );
-	// 		//mesh.scale.y = Math.random() * 2 + 1;
-	// 		mesh.scale.set( 0.25, 0.25, 0.25 );
-	// 		scene.add( mesh );
-	// 	}
-	// }
+  // 		var material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
+  // 		var mesh = new THREE.Mesh( boxgeometry, material );
+  // 		mesh.position.setFromMatrixPosition( reticle.matrix );
+  // 		//mesh.scale.y = Math.random() * 2 + 1;
+  // 		mesh.scale.set( 0.25, 0.25, 0.25 );
+  // 		scene.add( mesh );
+  // 	}
+  // }
 
   clock = new THREE.Clock();
   cameraControls = new CameraControls(camera, renderer.domElement);
   document.body.appendChild(ARButton.createButton(renderer));
-  controller = renderer.xr.getController( 0 );
-	// controller.addEventListener( 'select', onSelect );
-	scene.add( controller );
+  controller = renderer.xr.getController(0);
+  // controller.addEventListener( 'select', onSelect );
+  scene.add(controller);
   /* ------------------------ adding model to the scene ----------------------- */
   texture = new THREE.TextureLoader().load("Model/walnut-normal.jpg");
   textureWall = new THREE.TextureLoader().load("Model/wall-3.png");
@@ -733,7 +733,6 @@ function createDoor() {
       if (door.isMesh && door.name.includes("ramp")) {
         door.visible = false;
       }
-
       if (
         door.name.includes("Double__Door") ||
         door.name.includes("Standard_Door") ||
@@ -742,7 +741,6 @@ function createDoor() {
         door.parent.name.includes("Standard_Door")
       ) {
         // console.log(door);
-
         door.visible = true;
       } else {
         door.visible = false;
@@ -755,18 +753,15 @@ function createDoor() {
         door.material.color = new THREE.Color(0x382c16);
         door.material.bumpMap.needsUpdate = true;
         door.material.needsUpdate = true;
-       
       }
       if (door.name.includes("Trim_side")) {
         door.material = new THREE.MeshPhongMaterial();
-
         door.material.bumpMap = texture;
-        // door.material.map = texture;
+        //door.material.map = texture;
         door.material.bumpScale = 0.8;
         door.material.bumpMap.wrapS = THREE.RepeatWrapping;
         door.material.bumpMap.wrapT = THREE.RepeatWrapping;
         door.material.color = new THREE.Color(0xffffff);
-
         door.material.needsUpdate = true;
       }
       if (door.name.includes("Awning")) {
@@ -849,7 +844,6 @@ function addVent(child) {
   child.userData.name = "vent";
   child.userData.limit = false;
 }
-
 function addDoor(child) {
   child.material.bumpMap = textureWall;
 }
@@ -867,15 +861,14 @@ function animate() {
   checkTrimColor = trimColor;
   requestAnimationFrame(animate);
   composer.render();
-
   const delta = clock.getDelta();
   cameraControls.update(delta);
-  // if (resizeRendererToDisplaySize(renderer)) {
-  //   const canvas = renderer.domElement;
-  //   renderer.setSize(window.innerWidth, window.innerHeight);
-  //   camera.aspect = canvas.clientWidth / canvas.clientHeight;
-  //   camera.updateProjectionMatrix();
-  // }
+  if (resizeRendererToDisplaySize(renderer)) {
+    const canvas = renderer.domElement;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.updateProjectionMatrix();
+  }
 }
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
