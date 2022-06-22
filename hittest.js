@@ -219,7 +219,8 @@ function init() {
   }
 
   controller = renderer.xr.getController(0);
-  controller.addEventListener("select", onSelect);
+  controller.addEventListener("selectstart", onSelect);
+  console.log( renderer.xr)
   scene.add(controller);
   //
 
