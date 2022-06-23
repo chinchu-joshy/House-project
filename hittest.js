@@ -146,6 +146,20 @@ function init() {
 
      
     });
+    fbxLoader.load("Model/vent.fbx", (object) => {
+     
+      object.position.set(13, 43.8, 28.5);
+      // object.position.set(13, 49.8, 14);
+      object.traverse((child) => {
+        if (child.isMesh && child.name.includes("Vent")) {
+          // const pass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
+          // composer.addPass( pass );
+          addVent(child);
+        }
+      });
+      scene.add(object);
+     
+    });
    
   }
 
