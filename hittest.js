@@ -148,7 +148,7 @@ function init() {
     });
     fbxLoader.load("Model/vent.fbx", (object) => {
      
-      object.position.set(13, 43.8, 28.5);
+      object.position.set(0,0,0);
       // object.position.set(13, 49.8, 14);
       object.traverse((child) => {
         if (child.isMesh && child.name.includes("Vent")) {
@@ -303,13 +303,11 @@ function createVent(){
     child.userData.name = "vent";
     child.userData.limit = false;
   }
-
   controller = renderer.xr.getController(0);
   controller.addEventListener("selectstart", onSelect);
   console.log( renderer.xr)
   scene.add(controller);
   //
-
   window.addEventListener("resize", onWindowResize);
 }
 function onWindowResize() {
