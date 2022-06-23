@@ -148,7 +148,7 @@ function init() {
     });
     fbxLoader.load("Model/vent.fbx", (object) => {
      
-      object.position.set(0,0,0);
+      object.position.set(13, 43.8, 28.5);
       // object.position.set(13, 49.8, 14);
       object.traverse((child) => {
         if (child.isMesh && child.name.includes("Vent")) {
@@ -296,7 +296,7 @@ function createVent(){
     child.material.map.wrapT = THREE.RepeatWrapping;
     child.material.needsUpdate = true;
     child.material.map.needsUpdate = true;
-    child.scale.set(0.2, 0.2, 0.2);
+    child.scale.set(0.005, 0.005, 0.005);
     child.rotation.y = Math.PI;
     child.material.color = new THREE.Color(0xffffff);
     child.userData.draggable = true;
