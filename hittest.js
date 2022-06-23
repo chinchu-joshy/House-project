@@ -147,7 +147,7 @@ function init() {
      
     });
     fbxLoader.load("Model/vent.fbx", (object) => {
-     
+     console.log("checking")
       object.position.set(13, 43.8, 28.5);
       // object.position.set(13, 49.8, 14);
       object.traverse((child) => {
@@ -299,9 +299,7 @@ function createVent(){
     child.scale.set(0.005, 0.005, 0.005);
     child.rotation.y = Math.PI;
     child.material.color = new THREE.Color(0xffffff);
-    child.userData.draggable = true;
-    child.userData.name = "vent";
-    child.userData.limit = false;
+   
   }
   controller = renderer.xr.getController(0);
   controller.addEventListener("selectstart", onSelect);
