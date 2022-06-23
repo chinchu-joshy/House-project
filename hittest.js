@@ -135,7 +135,7 @@ function init() {
             child.visible = false;
           }
         });
-      object.position.set(0, -1, -5);
+      object.position.set(0, -1, 0);
       console.log("here")
       camera.lookAt(object.position);
       object.scale.set(0.005, 0.005, 0.005);
