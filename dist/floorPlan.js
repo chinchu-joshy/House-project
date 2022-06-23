@@ -58,7 +58,6 @@ document.body.appendChild( ARButton.createButton( renderer) );
 
 /* --------------------------------- animate -------------------------------- */
 function animate() {
-  
  
     renderer.setAnimationLoop( function () {
 
