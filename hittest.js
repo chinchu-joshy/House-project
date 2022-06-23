@@ -146,8 +146,7 @@ function init() {
 
      
     });
-    createVent()
-    createDoor()
+   
   }
 
 function createVent(){
